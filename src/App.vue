@@ -475,9 +475,24 @@ function apply(value: DesignSystem) {
           </div>
           <pre><code>{{ css }}</code></pre>
         </section>
-        <footer class="library-footer">
-          <span>Bloom · Local workspace</span
-          ><button class="text-button" @click="mode = 'export'">Export tokens</button>
+        <footer class="library-footer product-footer">
+          <div class="product-footer-brand">
+            <strong>bloom<span aria-hidden="true">.</span></strong>
+            <p>A place for your ideas to take root.</p>
+            <small>Designed and built by Erik Rodríguez</small>
+          </div>
+          <nav aria-label="Project links">
+            <a href="https://www.erikrod.com" target="_blank" rel="noreferrer"
+              >Portfolio <span aria-hidden="true">↗</span></a
+            >
+            <a href="https://www.erikrod.com/bloom" target="_blank" rel="noreferrer"
+              >Behind the project</a
+            >
+            <a href="https://github.com/erikrdgz/bloom" target="_blank" rel="noreferrer"
+              >View source</a
+            >
+            <button class="text-button" @click="mode = 'export'">Export tokens</button>
+          </nav>
         </footer>
       </main>
     </div>

@@ -815,3 +815,55 @@ fieldset.control-stack legend {
     align-items: stretch;
   }
 }
+
+.library-footer.product-footer {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 28px 0 12px;
+  margin-top: 40px;
+}
+.product-footer-brand strong {
+  font-size: 20px;
+  letter-spacing: -0.7px;
+  color: var(--text);
+}
+.product-footer-brand p {
+  margin: 7px 0 12px;
+  line-height: 1.6;
+}
+.product-footer-brand small {
+  font-size: 11px;
+}
+.product-footer nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.product-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+.product-footer a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.product-footer a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+@media (max-width: 640px) {
+  .library-footer.product-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
