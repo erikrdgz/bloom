@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { pageCode } from './lib/inspect'
+import ColorPicker from './components/ui/ColorPicker.vue'
 import SemanticColors from './components/SemanticColors.vue'
 import TokenHierarchy from './components/TokenHierarchy.vue'
 import { uiTokens } from './lib/system'
@@ -124,6 +125,21 @@ watch(dark, (value) => {
     /* Theme still works without storage. */
   }
 })
+function guardOriginal(event: Event) {
+  if (
+    activeId.value !== 'bloom-default' ||
+    !(event.target as Element).closest('[data-system-editor]')
+  )
+    return
+  if (
+    event instanceof KeyboardEvent &&
+    ['Tab', 'Escape', 'Shift', 'Control', 'Meta', 'Alt'].includes(event.key)
+  )
+    return
+  event.preventDefault()
+  event.stopPropagation()
+  notify('Bloom is a view-only reference. Choose Create a system to make it your own.')
+}
 function notify(message: string) {
   toast.value = message
   clearTimeout(toastTimer)
@@ -155,7 +171,14 @@ function apply(value: DesignSystem) {
 }
 </script>
 <template>
-  <div class="studio" :class="{ dark }" :style="sampleStyle">
+  <div
+    @click.capture="guardOriginal"
+    @pointerdown.capture="guardOriginal"
+    @keydown.capture="guardOriginal"
+    class="studio"
+    :class="{ dark }"
+    :style="sampleStyle"
+  >
     <div v-if="mobileNav" class="nav-scrim" @click="mobileNav = false"></div>
     <StudioSidebar
       :active="section"
@@ -308,11 +331,10 @@ function apply(value: DesignSystem) {
           </div>
         </template>
         <template v-else-if="section === 'Colors'"
-          ><div class="editor-toolbar">
-            <label>Primary color <input v-model="system.primary" type="color" /></label
-            ><code>{{ system.primary }}</code
-            ><label>Secondary color<input v-model="system.secondary" type="color" /></label
-            ><label
+          ><div class="editor-toolbar" data-system-editor>
+            <ColorPicker v-model="system.primary" label="Primary color" />
+            <ColorPicker v-model="system.secondary" label="Secondary color" />
+            <label
               >Neutrals<BloomSelect v-model="system.neutral">
                 <option value="stone">Stone</option>
                 <option value="slate">Slate</option>
@@ -324,7 +346,13 @@ function apply(value: DesignSystem) {
             :primary="system.primary"
             expanded
             label="Primary"
-            @select="notify('Use the primary color picker above to edit your palette')"
+            @select="
+              notify(
+                activeId === 'bloom-default'
+                  ? 'Bloom is view-only. Choose Create a system to make it your own.'
+                  : 'Use the primary color picker above to edit your palette',
+              )
+            "
             @copy="copy"
           />
           <div style="height: 20px"></div>
@@ -332,13 +360,19 @@ function apply(value: DesignSystem) {
             :primary="system.secondary"
             label="Secondary"
             expanded
-            @select="notify('Use the secondary color picker above to edit your palette')"
+            @select="
+              notify(
+                activeId === 'bloom-default'
+                  ? 'Bloom is view-only. Choose Create a system to make it your own.'
+                  : 'Use the secondary color picker above to edit your palette',
+              )
+            "
             @copy="copy"
           />
-          <SemanticColors :system="system" @update="system.feedback = $event" />
+          <SemanticColors data-system-editor :system="system" @update="system.feedback = $event" />
         </template>
         <template v-else-if="section === 'Typography'"
-          ><div class="editor-toolbar">
+          ><div class="editor-toolbar" data-system-editor>
             <label
               >Body font
               <BloomSelect v-model="system.font">
@@ -383,7 +417,7 @@ function apply(value: DesignSystem) {
           </section></template
         >
         <template v-else-if="section === 'Spacing & shape'"
-          ><div class="editor-toolbar">
+          ><div class="editor-toolbar" data-system-editor>
             <label
               >Base unit <input v-model.number="system.spacing" type="range" min="2" max="8" />{{
                 system.spacing

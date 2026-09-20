@@ -60,7 +60,7 @@ function replay() {
 </script>
 <template>
   <div class="motion-page">
-    <div class="editor-toolbar">
+    <div class="editor-toolbar" data-system-editor>
       <label
         >System motion<BloomSelect
           :value="profile"

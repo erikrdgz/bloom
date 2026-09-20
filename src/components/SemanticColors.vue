@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ColorPicker from './ui/ColorPicker.vue'
 import { computed } from 'vue'
 import {
   feedbackRoles,
@@ -16,8 +17,8 @@ const meaning = {
   error: 'A failed action, invalid input, or destructive outcome.',
   info: 'Helpful context without a change in urgency.',
 }
-function update(role: FeedbackRole, event: Event) {
-  emit('update', { ...props.system.feedback, [role]: (event.target as HTMLInputElement).value })
+function update(role: FeedbackRole, value: string) {
+  emit('update', { ...props.system.feedback, [role]: value })
 }
 const light = computed(() => uiTokens(props.system, 'light'))
 const dark = computed(() => uiTokens(props.system, 'dark'))
@@ -30,15 +31,11 @@ const dark = computed(() => uiTokens(props.system, 'dark'))
     </p>
     <div class="feedback-grid">
       <article v-for="role in feedbackRoles" :key="role">
-        <label
-          ><input
-            type="color"
-            :value="system.feedback[role]"
-            @input="update(role, $event)"
-            :aria-label="`${role} color`"
-          /><strong>{{ role }}</strong
-          ><code>{{ system.feedback[role] }}</code></label
-        >
+        <ColorPicker
+          :model-value="system.feedback[role]"
+          :label="role"
+          @update:model-value="update(role, $event)"
+        />
         <p>{{ meaning[role] }}</p>
         <div class="feedback-scale">
           <span

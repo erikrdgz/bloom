@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ColorPicker from './ui/ColorPicker.vue'
 import SemanticColors from './SemanticColors.vue'
 import BloomSelect from './ui/BloomSelect.vue'
 import { computed, nextTick, ref, watch } from 'vue'
@@ -146,14 +147,33 @@ function create() {
                     type="radio"
                     name="direction"
                     :checked="direction === item.id"
-                    @change="chooseDirection(item.id)" />
+                    @change="chooseDirection(item.id)"
+                  />
                   <div>
                     <strong>{{ item.name }}</strong
                     ><span>{{ item.note }}</span
                     ><small>{{ item.values.headingFont }} + {{ item.values.font }}</small>
                   </div>
-                  <i :style="{ background: item.values.primary }"></i
-                ></label>
+                  <div
+                    class="preset-preview"
+                    aria-hidden="true"
+                    :style="{ fontFamily: item.values.headingFont }"
+                  >
+                    <span :style="{ color: item.values.primary }">Aa</span
+                    ><i
+                      :style="{
+                        background: item.values.primary,
+                        borderRadius: item.values.radius + 'px',
+                      }"
+                    ></i
+                    ><i
+                      :style="{
+                        background: item.values.secondary,
+                        borderRadius: item.values.radius + 'px',
+                      }"
+                    ></i>
+                  </div>
+                </label>
               </fieldset>
               <p class="wizard-hint">
                 Switching direction resets style choices, but keeps your project name and
@@ -166,15 +186,8 @@ function create() {
                 ten-step palette.
               </p>
               <div class="wizard-color-row">
-                <label
-                  >Primary<input v-model="draft.primary" type="color" /><code>{{
-                    draft.primary
-                  }}</code></label
-                ><label
-                  >Secondary<input v-model="draft.secondary" type="color" /><code>{{
-                    draft.secondary
-                  }}</code></label
-                >
+                <ColorPicker v-model="draft.primary" label="Primary" />
+                <ColorPicker v-model="draft.secondary" label="Secondary" />
               </div>
               <SemanticColors :system="draft" compact @update="draft.feedback = $event" />
               <fieldset class="neutral-options">

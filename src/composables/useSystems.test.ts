@@ -4,7 +4,7 @@ import { useSystems } from './useSystems'
 import { defaultSystem } from '../lib/system'
 afterEach(() => vi.unstubAllGlobals())
 describe('original Bloom workspace', () => {
-  it('keeps the pink original and saves edits into a separate system', async () => {
+  it('keeps the original view-only and allows explicitly created systems', async () => {
     const data = new Map<string, string>()
     vi.stubGlobal('localStorage', {
       getItem: (key: string) => data.get(key) ?? null,
@@ -18,8 +18,15 @@ describe('original Bloom workspace', () => {
     expect(workspace.projects.value.find((p) => p.id === 'bloom-default')?.system.primary).toBe(
       '#edb4c8',
     )
+    expect(workspace.system.value).toEqual(defaultSystem)
+    expect(workspace.projects.value).toHaveLength(1)
+    workspace.system.value = { ...defaultSystem, primary: '#123456' }
+    expect(workspace.system.value).toEqual(defaultSystem)
+    workspace.addSystem({ ...defaultSystem, name: 'My studio' })
+    workspace.system.value.primary = '#123456'
+    workspace.system.value.feedback.success = '#246842'
+    await nextTick()
     expect(workspace.system.value.primary).toBe('#123456')
-    expect(workspace.system.value.name).toBe('Bloom study')
     scope.stop()
     const restoredScope = effectScope()
     const restored = restoredScope.run(() => useSystems())!

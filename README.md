@@ -74,7 +74,7 @@ Bloom code is MIT licensed. See [LICENSE](LICENSE).
 
 Choose heading and body fonts independently from DM Sans, Space Grotesk, Inter, Manrope, Plus Jakarta Sans, Outfit, Nunito Sans, Source Sans 3, Lora, Libre Baskerville, Cormorant Garamond, and IBM Plex Mono, plus the device system font. Selected fonts load on demand from Google Fonts; generic fallbacks work offline. CSS exports include the font stylesheet imports.
 
-Bloom’s original light-pink system is always available. Editing it creates a separate Bloom study, preserving the original. Dropdowns share a custom keyboard-accessible popover control. Motion previews offer actual, slow, and study playback; playback speed does not change exported timing tokens. Developer mode shows page-specific output and expandable component references with values for the current appearance.
+Bloom’s original light-pink system is always available. It is view-only. Editing controls guide visitors to create their own system without creating an automatic copy. The shared rounded color picker supports hex entry and hue, saturation, and lightness. Six onboarding presets coordinate fonts, colors, spacing, corners, elevation, and motion. Dropdowns share a custom keyboard-accessible popover control. Motion previews offer actual, slow, and study playback; playback speed does not change exported timing tokens. Developer mode shows page-specific output and expandable component references with values for the current appearance.
 
 ## GitHub Pages
 

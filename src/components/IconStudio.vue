@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ColorPicker from './ui/ColorPicker.vue'
 import { ref } from 'vue'
 import {
   faHeart,
@@ -70,10 +71,11 @@ function exportIcons() {
         >Preview size <input v-model.number="size" type="range" min="16" max="48" />{{
           size
         }}px</label
-      ><label>Preview color <input v-model="color" type="color" /></label>
+      ><ColorPicker v-model="color" label="Preview color" />
     </div>
     <div class="icon-grid">
       <button
+        data-system-editor
         v-for="icon in icons"
         :key="icon.iconName"
         :aria-pressed="selected.includes(icon.iconName)"

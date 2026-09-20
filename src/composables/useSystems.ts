@@ -56,20 +56,16 @@ export function useSystems() {
     () => {
       const original = projects.value.find((entry) => entry.id === 'bloom-default')!
       if (JSON.stringify(original.system) !== JSON.stringify(defaultSystem)) {
-        const edited = parseSystem(JSON.stringify(original.system))
         original.system = structuredClone(defaultSystem)
-        const id = crypto.randomUUID()
-        projects.value.push({ id, system: { ...edited, name: 'Bloom study' } })
-        activeId.value = id
       }
     },
-    { deep: true, flush: 'post' },
+    { deep: true, flush: 'sync' },
   )
   const system = computed<DesignSystem>({
     get: () => projects.value.find((entry) => entry.id === activeId.value)!.system,
     set: (value) => {
       const entry = projects.value.find((entry) => entry.id === activeId.value)
-      if (entry) entry.system = value
+      if (entry && entry.id !== 'bloom-default') entry.system = value
     },
   })
   watch(

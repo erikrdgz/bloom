@@ -552,3 +552,23 @@
     transition: none;
   }
 }
+
+.direction-options .preset-preview {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.preset-preview span {
+  font-size: 28px;
+  font-weight: 600;
+}
+.direction-options .preset-preview i {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+.wizard-color-row .color-picker {
+  flex: 1;
+}
