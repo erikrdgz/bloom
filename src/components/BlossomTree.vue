@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useId } from 'vue'
 import { blossomPaths } from '../lib/blossomPaths'
-defineProps<{ dark: boolean }>()
+const props = defineProps<{ dark: boolean }>()
+const woodFilterId = `wood-tone-${useId()}`
+// Preserve the bark's luminance detail and alpha; only the wood changes tone.
+const woodTones = computed(() =>
+  props.dark
+    ? '0.08 0.32 0.82 0.95 0.98 0.99 0.99 0.99 1 1 1'
+    : '0.015 0.025 0.035 0.055 0.09 0.16 0.25 0.36 0.43 0.5 0.55',
+)
 const woodImage = `${import.meta.env.BASE_URL}images/cherry-wood-clean.png`
 const breezePetals = [
   [365, 80, 15, -3],
@@ -55,6 +62,14 @@ onUnmounted(() => {
         aria-hidden="true"
       >
         <defs>
+          <filter :id="woodFilterId" color-interpolation-filters="sRGB">
+            <feColorMatrix type="saturate" values="0" />
+            <feComponentTransfer>
+              <feFuncR type="table" :tableValues="woodTones" />
+              <feFuncG type="table" :tableValues="woodTones" />
+              <feFuncB type="table" :tableValues="woodTones" />
+            </feComponentTransfer>
+          </filter>
           <g id="cherry-flower">
             <path
               d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
@@ -105,6 +120,7 @@ onUnmounted(() => {
           </g>
           <image
             class="wood-photo"
+            :filter="`url(#${woodFilterId})`"
             :href="woodImage"
             x="0"
             y="0"
