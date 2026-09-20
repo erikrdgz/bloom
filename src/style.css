@@ -276,10 +276,12 @@ nav button:hover,
   /* Sticky because on narrow screens this bar holds the only way to reach
      navigation: once the sidebar collapses into a drawer, its menu button
      lives here. Scrolling used to carry it off the screen for good. */
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: var(--rail);
+  right: 0;
   z-index: 20;
-  height: 77px;
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1906,5 +1908,29 @@ nav button,
   }
   .sidebar.open {
     visibility: visible;
+  }
+}
+
+/* The top bar is taken out of the flow rather than stuck to it, and the space
+   it used to occupy is reserved below as padding. Relying on sticky to hold
+   that space did not behave the same in every browser; a reservation does.
+   --rail tracks the shell's left offset so the fixed bar starts where the
+   sidebar ends, and --topbar-h keeps the bar and the space it needs in step. */
+.studio {
+  --rail: 238px;
+  --topbar-h: 77px;
+}
+.main-shell {
+  padding-top: var(--topbar-h);
+}
+@media (max-width: 1200px) {
+  .studio {
+    --rail: 215px;
+  }
+}
+@media (max-width: 700px) {
+  .studio {
+    --rail: 0px;
+    --topbar-h: 65px;
   }
 }
