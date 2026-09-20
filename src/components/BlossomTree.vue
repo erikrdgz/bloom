@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { blossoms } from '../lib/blossoms'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { blossomPaths } from '../lib/blossomPaths'
 defineProps<{ dark: boolean }>()
 const woodImage = `${import.meta.env.BASE_URL}images/cherry-wood-clean.png`
 const breezePetals = [
@@ -20,116 +21,145 @@ const breezePetals = [
   [510, 160, 18, -15],
   [625, 300, 16, -11],
 ]
-const rear = blossoms.filter((flower) => flower.rear)
-const front = blossoms.filter((flower) => !flower.rear)
+const rear = blossomPaths.filter((path) => path.rear)
+const front = blossomPaths.filter((path) => !path.rear)
+const root = ref<HTMLElement>()
+const paused = ref(false)
+let visible = true
+let observer: IntersectionObserver | undefined
+function updatePause() {
+  paused.value = !visible || document.hidden
+}
+onMounted(() => {
+  observer = new IntersectionObserver(([entry]) => {
+    visible = !!entry?.isIntersecting
+    updatePause()
+  })
+  if (root.value) observer.observe(root.value)
+  document.addEventListener('visibilitychange', updatePause)
+  updatePause()
+})
+onUnmounted(() => {
+  observer?.disconnect()
+  document.removeEventListener('visibilitychange', updatePause)
+})
 </script>
 <template>
-  <svg
-    class="vector-tree"
-    :class="{ night: dark }"
-    viewBox="0 0 800 560"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <defs>
-      <g id="cherry-flower">
-        <path
-          d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
-          fill="currentColor"
-        />
-        <path
-          d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
-          fill="currentColor"
-          transform="rotate(72)"
-        />
-        <path
-          d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
-          fill="currentColor"
-          transform="rotate(144)"
-        />
-        <path
-          d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
-          fill="currentColor"
-          transform="rotate(216)"
-        />
-        <path
-          d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
-          fill="currentColor"
-          transform="rotate(288)"
-        />
-        <path
-          d="M0-.45V.4M-.4-.15L.38.15M-.25.34L.25-.34"
-          stroke="var(--flower-center)"
-          stroke-width=".07"
-          opacity=".8"
-        />
-        <circle r=".13" fill="var(--flower-center)" />
-      </g>
-      <g id="cherry-bud">
-        <ellipse rx=".5" ry=".8" fill="currentColor" />
-        <path d="M-.3.5L0 .9L.3.5" fill="var(--flower-shadow)" />
-      </g>
-    </defs>
-    <g class="swaying-tree">
-      <g class="rear-blossoms">
-        <use
-          v-for="flower in rear"
-          :key="flower.id"
-          :href="flower.bud ? '#cherry-bud' : '#cherry-flower'"
-          :class="`tone-${Math.max(0, flower.tone - 1)}`"
-          :transform="`translate(${flower.x} ${flower.y}) rotate(${flower.angle}) scale(${flower.size} ${flower.size * flower.aspect})`"
-        />
-      </g>
-      <image
-        class="wood-photo"
-        :href="woodImage"
-        x="0"
-        y="0"
-        width="800"
-        height="560"
-        preserveAspectRatio="none"
-      />
-      <g class="front-blossoms">
-        <use
-          v-for="flower in front"
-          :key="flower.id"
-          :href="flower.bud ? '#cherry-bud' : '#cherry-flower'"
-          :class="`tone-${flower.tone}`"
-          :transform="`translate(${flower.x} ${flower.y}) rotate(${flower.angle}) scale(${flower.size} ${flower.size * flower.aspect})`"
-        />
-      </g>
-    </g>
-    <g class="breeze-petals">
-      <g
-        v-for="([x, y, duration, delay], index) in breezePetals"
-        :key="index"
-        :transform="`translate(${x} ${y})`"
-        class="petal-origin"
+  <div ref="root" class="tree-layer" :class="{ paused }" aria-hidden="true">
+    <div class="canopy-layer">
+      <svg
+        class="vector-tree"
+        :class="{ night: dark }"
+        viewBox="0 0 800 560"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
+        <defs>
+          <g id="cherry-flower">
+            <path
+              d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
+              fill="currentColor"
+            />
+            <path
+              d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
+              fill="currentColor"
+              transform="rotate(72)"
+            />
+            <path
+              d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
+              fill="currentColor"
+              transform="rotate(144)"
+            />
+            <path
+              d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
+              fill="currentColor"
+              transform="rotate(216)"
+            />
+            <path
+              d="M0 .1C-.35-.2-.72-.58-.48-.92Q-.25-1.14 0-.82Q.27-1.14.49-.88C.72-.53.32-.18 0 .1Z"
+              fill="currentColor"
+              transform="rotate(288)"
+            />
+            <path
+              d="M0-.45V.4M-.4-.15L.38.15M-.25.34L.25-.34"
+              stroke="var(--flower-center)"
+              stroke-width=".07"
+              opacity=".8"
+            />
+            <circle r=".13" fill="var(--flower-center)" />
+          </g>
+          <g id="cherry-bud">
+            <ellipse rx=".5" ry=".8" fill="currentColor" />
+            <path d="M-.3.5L0 .9L.3.5" fill="var(--flower-shadow)" />
+          </g>
+        </defs>
+        <g class="swaying-tree">
+          <g class="rear-blossoms" v-once>
+            <path
+              v-for="path in rear"
+              :key="path.tone"
+              :d="path.d"
+              :class="`tone-${path.tone}`"
+              fill="currentColor"
+            />
+          </g>
+          <image
+            class="wood-photo"
+            :href="woodImage"
+            x="0"
+            y="0"
+            width="800"
+            height="560"
+            preserveAspectRatio="none"
+          />
+          <g class="front-blossoms" v-once>
+            <path
+              v-for="path in front"
+              :key="path.tone"
+              :d="path.d"
+              :class="`tone-${path.tone}`"
+              fill="currentColor"
+            />
+          </g>
+        </g>
+      </svg>
+    </div>
+    <svg class="petal-overlay vector-tree" viewBox="0 0 800 560" aria-hidden="true">
+      <g class="breeze-petals">
         <g
-          class="drifting-petal"
-          :style="{
-            '--drift-duration': `${duration! * 0.75}s`,
-            '--drift-delay': `${delay}s`,
-            '--drift-x': `${-150 - index * 9}px`,
-            '--drift-y': `${95 + index * 8}px`,
-          }"
+          v-for="([x, y, duration, delay], index) in breezePetals"
+          :key="index"
+          :transform="`translate(${x} ${y})`"
+          class="petal-origin"
         >
           <g
-            class="tumbling-petal"
-            :style="{ '--tumble-duration': `${4 + (index % 4)}s` }"
-            :class="`tone-${3 + (index % 4)}`"
+            class="drifting-petal"
+            :style="{
+              '--drift-duration': `${duration! * 0.75}s`,
+              '--drift-delay': `${delay}s`,
+              '--drift-x': `${-150 - index * 9}px`,
+              '--drift-y': `${95 + index * 8}px`,
+            }"
           >
-            <use v-if="index % 4 === 0" href="#cherry-flower" transform="scale(3.4)" />
-            <path v-else d="M0 4C-5 0-5-5-2-6Q0-7 1-4Q5-6 5-2C5 1 2 3 0 4Z" fill="currentColor" />
+            <g
+              class="tumbling-petal"
+              :style="{ '--tumble-duration': `${4 + (index % 4)}s` }"
+              :class="`tone-${3 + (index % 4)}`"
+            >
+              <use v-if="index % 4 === 0" href="#cherry-flower" transform="scale(3.4)" />
+              <path v-else d="M0 4C-5 0-5-5-2-6Q0-7 1-4Q5-6 5-2C5 1 2 3 0 4Z" fill="currentColor" />
+            </g>
           </g>
         </g>
       </g>
-    </g>
-  </svg>
+    </svg>
+  </div>
 </template>
 <style scoped>
 .vector-tree {
+  width: 100%;
+  height: 100%;
+  display: block;
   --flower-shadow: color-mix(in srgb, var(--primary), #54323e 38%);
   --flower-center: color-mix(in srgb, var(--primary), #754253 52%);
   overflow: visible;
@@ -158,10 +188,17 @@ const front = blossoms.filter((flower) => !flower.rear)
 .wood-photo {
   opacity: 1;
 }
-.swaying-tree {
-  transform-origin: 570px 550px;
+.canopy-layer {
+  width: 100%;
+  height: 100%;
+  transform-origin: 72% 98%;
   animation: tree-breeze 10s ease-in-out infinite;
   will-change: transform;
+}
+.petal-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 .drifting-petal {
   opacity: 0;
@@ -170,19 +207,24 @@ const front = blossoms.filter((flower) => !flower.rear)
 .tumbling-petal {
   animation: petal-tumble var(--tumble-duration) ease-in-out var(--drift-delay) infinite;
 }
+.paused .canopy-layer,
+.paused .drifting-petal,
+.paused .tumbling-petal {
+  animation-play-state: paused;
+}
 @keyframes tree-breeze {
   0%,
   100% {
-    transform: rotate(-0.22deg) skewX(-0.1deg);
+    transform: translateZ(0) rotate(-0.22deg) skewX(-0.1deg);
   }
   38% {
-    transform: rotate(0.38deg) skewX(0.14deg);
+    transform: translateZ(0) rotate(0.38deg) skewX(0.14deg);
   }
   65% {
-    transform: rotate(0.08deg);
+    transform: translateZ(0) rotate(0.08deg);
   }
   82% {
-    transform: rotate(0.2deg);
+    transform: translateZ(0) rotate(0.2deg);
   }
 }
 @keyframes petal-drift {
@@ -207,10 +249,10 @@ const front = blossoms.filter((flower) => !flower.rear)
 @keyframes petal-tumble {
   0%,
   100% {
-    transform: rotate(-25deg) scaleX(1);
+    transform: translateZ(0) rotate(-25deg) scaleX(1);
   }
   50% {
-    transform: rotate(150deg) scaleX(0.45);
+    transform: translateZ(0) rotate(150deg) scaleX(0.45);
   }
 }
 @media (max-width: 700px) {
@@ -219,7 +261,7 @@ const front = blossoms.filter((flower) => !flower.rear)
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .swaying-tree {
+  .canopy-layer {
     animation: none;
     will-change: auto;
   }
