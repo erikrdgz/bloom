@@ -58,6 +58,7 @@ export const directions = [
 export function newDraft(): DesignSystem {
   return {
     ...defaultSystem,
+    feedback: { ...defaultSystem.feedback },
     ...directions[0].values,
     name: '',
     description: '',

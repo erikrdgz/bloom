@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Check, ArrowUpRight } from 'lucide-vue-next'
-import { palette, foreground, semanticColors } from '../lib/system'
+import { palette, foreground } from '../lib/system'
 const props = defineProps<{ primary: string; expanded?: boolean; label?: string }>()
 const emit = defineEmits<{ select: []; copy: [value: string] }>()
 const shades = computed(() => palette(props.primary))
@@ -38,11 +38,6 @@ const tokenName = computed(() => (props.label || 'Primary').toLowerCase())
       <div v-for="shade in shades" :key="shade.step">
         <span><i :style="{ background: shade.color }"></i>{{ tokenName }}-{{ shade.step }}</span
         ><button class="code-copy" @click="emit('copy', shade.color)">{{ shade.color }}</button>
-      </div>
-    </div>
-    <div v-if="tokenName === 'primary'" class="semantic-colors">
-      <div v-for="color in semanticColors" :key="color.name">
-        <span :style="{ background: color.hex }"></span><small>{{ color.name }}</small>
       </div>
     </div>
   </section>

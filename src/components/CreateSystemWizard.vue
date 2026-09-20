@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SemanticColors from './SemanticColors.vue'
 import BloomSelect from './ui/BloomSelect.vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { ArrowLeft, ArrowRight, Check, X } from 'lucide-vue-next'
@@ -175,6 +176,7 @@ function create() {
                   }}</code></label
                 >
               </div>
+              <SemanticColors :system="draft" compact @update="draft.feedback = $event" />
               <fieldset class="neutral-options">
                 <legend>Neutral surfaces</legend>
                 <label v-for="name in ['stone', 'slate', 'zinc'] as const" :key="name"
@@ -319,7 +321,7 @@ function create() {
                 </div>
                 <div>
                   <dt>Colors</dt>
-                  <dd>20 palette shades · {{ draft.neutral }} neutrals</dd>
+                  <dd>70 palette shades · {{ draft.neutral }} neutrals</dd>
                 </div>
                 <div>
                   <dt>Spacing / shape</dt>

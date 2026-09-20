@@ -22,8 +22,8 @@ const emit = defineEmits<{ explore: [] }>()
       </button>
     </div>
     <div class="garden-caption">
-      <p>To my fellow creatives — keep making things only you can make.</p>
-      <span class="garden-signature">— Erik Rodriguez</span>
+      <p>Built for the creative soul. A starting point for what comes next.</p>
+      <span class="garden-signature">Erik Rodriguez</span>
     </div>
   </section>
 </template>

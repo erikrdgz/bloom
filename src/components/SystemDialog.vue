@@ -7,6 +7,7 @@ const emit = defineEmits<{ close: []; apply: [system: DesignSystem]; notify: [me
 const dialog = ref<HTMLDialogElement>()
 const error = ref('')
 const source = ref('')
+const exporting = ref(false)
 watch(
   () => props.mode,
   async (mode) => {
@@ -37,6 +38,33 @@ async function readFile(event: Event) {
     error.value = ''
   } catch {
     error.value = 'Could not read this file. Try another file.'
+  }
+}
+async function saveBundle(format: 'code' | 'pdf') {
+  exporting.value = true
+  error.value = ''
+  try {
+    const snapshot = parseSystem(JSON.stringify(props.system))
+    const filename = snapshot.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'bloom'
+    let blob: Blob
+    if (format === 'pdf') {
+      const { createSystemPDF } = await import('../lib/exportPDF')
+      blob = createSystemPDF(snapshot).output('blob')
+    } else {
+      const { exportCode } = await import('../lib/exportBundle')
+      blob = new Blob([new Uint8Array(exportCode(snapshot))], { type: 'application/zip' })
+    }
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${filename}-system.${format === 'pdf' ? 'pdf' : 'zip'}`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    emit('notify', `${format === 'pdf' ? 'PDF reference' : 'Code bundle'} downloaded`)
+  } catch {
+    error.value = 'Export failed. Please try again.'
+  } finally {
+    exporting.value = false
   }
 }
 function save(format: 'json' | 'css') {
@@ -92,13 +120,32 @@ function save(format: 'json' | 'css') {
       <template v-if="mode === 'export'"
         ><h2>Export system</h2>
         <p>
-          Take {{ system.name }} into your next project. Export CSS variables for development or
-          JSON to reopen in Bloom.
+          Take {{ system.name }} into your next project with a complete code starter or a shareable
+          PDF reference.
         </p>
+        <button class="export-option" :disabled="exporting" @click="saveBundle('code')">
+          <span
+            ><strong>Code starter · ZIP</strong
+            ><small
+              >70 shades, light/dark UI roles, component CSS, working demo and token JSON</small
+            ></span
+          ><Download :size="20" />
+        </button>
+        <button class="export-option" :disabled="exporting" @click="saveBundle('pdf')">
+          <span
+            ><strong>Design system reference · PDF</strong
+            ><small
+              >Six pages of palettes, semantic roles, typography, spacing and component
+              mappings</small
+            ></span
+          ><Download :size="20" />
+        </button>
+        <p v-if="exporting" role="status">Preparing your export...</p>
+        <p v-if="error" class="error" role="alert">{{ error }}</p>
         <button class="export-option" @click="save('css')">
           <span
             ><strong>CSS custom properties</strong
-            ><small>Palette, font, spacing, radius & theme surfaces</small></span
+            ><small>Palettes, UI roles, typography, spacing and motion</small></span
           ><Download :size="20" /></button
         ><button class="export-option" @click="save('json')">
           <span

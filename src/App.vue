@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { pageCode } from './lib/inspect'
+import SemanticColors from './components/SemanticColors.vue'
+import TokenHierarchy from './components/TokenHierarchy.vue'
+import { uiTokens } from './lib/system'
 import BloomSelect from './components/ui/BloomSelect.vue'
 import { computed, provide, nextTick, onUnmounted, ref, watch } from 'vue'
 import {
@@ -51,7 +54,7 @@ try {
 const dark = ref(initialDark)
 provide('bloom-dark', dark)
 const sectionDescriptions: Record<string, string> = {
-  Colors: 'Edit the primary color and inspect the generated scale.',
+  Colors: 'Shape brand palettes, feedback colors, and the roles that connect them.',
   Typography: 'Font family, sizes, and weights.',
   'Spacing & shape': 'Base spacing, scale, and corner radius.',
   Components: 'States, interactions, and usage for each component.',
@@ -75,6 +78,12 @@ const sampleStyle = computed(() => {
   const neutral = neutralPalettes[s.neutral][dark.value ? 'dark' : 'light']
   const factor = { calm: 1.4, standard: 1, snappy: 0.7 }[s.motion]
   return {
+    ...Object.fromEntries(
+      Object.entries(uiTokens(s, dark.value ? 'dark' : 'light')).map(([key, value]) => [
+        `--${key}`,
+        value,
+      ]),
+    ),
     '--primary': s.primary,
     '--on-primary': foreground(s.primary),
     '--secondary': s.secondary,
@@ -212,12 +221,17 @@ function apply(value: DesignSystem) {
             Create a system<ArrowUpRight :size="16" />
           </button>
         </div>
+        <TokenHierarchy
+          v-if="['Colors', 'Components'].includes(section)"
+          :system="system"
+          :dark="dark"
+        />
         <template v-if="section === 'Overview'">
           <BlossomScene :dark="dark" @explore="navigate('Components')" />
           <div class="stat-grid">
             <button
               v-for="stat in [
-                { icon: Palette, count: '24', label: 'Color tokens', target: 'Colors' },
+                { icon: Palette, count: '70', label: 'Color tokens', target: 'Colors' },
                 { icon: Type, count: '6', label: 'Type styles', target: 'Typography' },
                 { icon: Ruler, count: '8', label: 'Spacing steps', target: 'Spacing & shape' },
                 {
@@ -311,7 +325,8 @@ function apply(value: DesignSystem) {
             expanded
             label="Primary"
             @select="notify('Use the primary color picker above to edit your palette')"
-            @copy="copy" />
+            @copy="copy"
+          />
           <div style="height: 20px"></div>
           <ColorPalette
             :primary="system.secondary"
@@ -319,7 +334,9 @@ function apply(value: DesignSystem) {
             expanded
             @select="notify('Use the secondary color picker above to edit your palette')"
             @copy="copy"
-        /></template>
+          />
+          <SemanticColors :system="system" @update="system.feedback = $event" />
+        </template>
         <template v-else-if="section === 'Typography'"
           ><div class="editor-toolbar">
             <label

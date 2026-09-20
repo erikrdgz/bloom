@@ -26,14 +26,14 @@ Bloom uses a quiet Japanese-inspired aesthetic with English-only typography: sla
 ## Features
 
 - **Ready on arrival:** Bloom includes a generated primary palette, semantic colors, six type specimens, eight spacing steps, and an interactive component catalog.
-- **Foundations:** edit primary and secondary colors, neutral surfaces, heading and body fonts, base size and type scale, spacing, radius, elevation, and motion. Component previews respond immediately.
+- **Foundations:** edit primary and secondary colors, success/warning/error/information palettes, neutral surfaces, heading and body fonts, base size and type scale, spacing, radius, elevation, and motion. Component previews respond immediately.
 - **Components:** fourteen documented families, including validated inputs, keyboard-navigable tabs, sorting and row selection, and native modal focus management. Button, switch, dialog, and specimen wrappers are reusable Vue components. Examples are local demonstrations.
 - **Motion:** timing and easing references, replayable transitions, reduced-motion previews, and CSS motion variables included in exports. System reduced-motion preferences are always respected.
 - **Developer mode:** inspect and copy generated CSS custom properties, including the selected Google Fonts imports.
 - **Light and dark:** the studio includes both themes; exports include base surface and text values for both modes.
 - **Create:** six steps covering project details, visual direction, primary/secondary palettes, heading/body font pairing and type scale, spacing/radius/elevation/motion, and review. A live light/dark preview updates throughout. Creation adds a saved system without replacing existing work.
 - **Import:** validate Bloom v1 JSON, trim names, normalize hex colors, and deduplicate icons. A malformed import never changes the working system. Valid imports add a separate saved system.
-- **Export:** download CSS custom properties or round-trip JSON configuration.
+- **Export:** download a code ZIP with tokens, responsive component styles, an interactive HTML demo, structured token JSON, and reimportable Bloom configuration; or a six-page PDF reference covering colors, both appearances, typography, spacing, motion, and component roles. Individual CSS and JSON downloads remain available.
 - **Icon set:** curate twelve Font Awesome Free icons and export the selected set as an SVG symbol sprite. Preview size/color do not alter the sprite, which inherits styling when used.
 - **Local drafts:** multiple systems and appearance preferences persist in this browser. The workspace selector changes Bloom’s own theme; the botanical illustration retains its structure. Export JSON to back up or transfer work.
 
@@ -55,7 +55,7 @@ No backend, account, router, or state-management package is required for this br
 
 ## Scope and roadmap
 
-Import currently accepts this application's JSON format only. General CSS/Figma/DTCG ingestion, token alias resolution, contrast audits, semantic token editing, component source generation, and theme-specific palettes remain future work. The CSS export includes the six generated typography styles and four semantic colors shown in the studio. Exports are starting foundations, not a full distributable Vue component library.
+Import currently accepts this application's JSON format only. General CSS/Figma/DTCG ingestion and a full distributable Vue component library remain future work. Exports include 70 palette shades, light/dark semantic UI roles, component aliases, six typography styles, and spacing, elevation, and motion decisions. Feedback text/surface pairs target 4.5:1 contrast and feedback borders target 3:1. These pair checks do not replace testing actual interfaces. The code bundle provides a usable HTML/CSS starting system. PDF references use Helvetica while documenting your selected fonts.
 
 ## Contributing
 

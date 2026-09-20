@@ -12,7 +12,7 @@ export function pageCode(system: DesignSystem, section: string): string {
           spacing: 'Spacing & shape',
           motion: 'Motion',
         },
-        export: 'Use Export for the complete CSS or JSON system.',
+        export: 'Use Export for the code ZIP, PDF reference, CSS, or Bloom JSON.',
       },
       null,
       2,
@@ -23,7 +23,7 @@ export function pageCode(system: DesignSystem, section: string): string {
       .join('\n')
   const pattern =
     section === 'Colors'
-      ? /--color-/
+      ? /--color-|--surface-|--text-|--border-|--action-|--focus-|--success-|--warning-|--error-|--info-/
       : section === 'Typography'
         ? /--font-|--type-/
         : section === 'Spacing & shape'

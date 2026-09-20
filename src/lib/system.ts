@@ -1,8 +1,17 @@
 import { motionDeclarations, reducedMotionCSS } from './motion'
 import { fonts, fontFamily, fontStylesheet, type FontFamily } from './fonts'
 export { fonts, fontFamily } from './fonts'
+export const feedbackRoles = ['success', 'warning', 'error', 'info'] as const
+export type FeedbackRole = (typeof feedbackRoles)[number]
+export const defaultFeedback = {
+  success: '#357760',
+  warning: '#bd821b',
+  error: '#cb4e4e',
+  info: '#3979c3',
+}
 export interface DesignSystem {
   version: 1
+  feedback: Record<FeedbackRole, string>
   name: string
   description: string
   primary: string
@@ -21,6 +30,7 @@ export interface DesignSystem {
 export const defaultSystem: DesignSystem = {
   version: 1,
   name: 'Bloom',
+  feedback: { ...defaultFeedback },
   description: 'Design tokens and component examples.',
   primary: '#edb4c8',
   font: 'DM Sans',
@@ -107,8 +117,20 @@ export function parseSystem(input: string): DesignSystem {
     throw new Error('Base font size must be 14–20px.')
   if (typeof typeRatio !== 'number' || ![1.125, 1.2, 1.25, 1.333].includes(typeRatio))
     throw new Error('Choose a supported type scale.')
+  const feedback = { ...defaultFeedback }
+  if (s.feedback !== undefined) {
+    if (!s.feedback || typeof s.feedback !== 'object' || Array.isArray(s.feedback))
+      throw new Error('Feedback colors must be an object.')
+    for (const role of feedbackRoles) {
+      const value = (s.feedback as Record<string, unknown>)[role] ?? defaultFeedback[role]
+      if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value))
+        throw new Error(`${role} must be a six-digit hex color.`)
+      feedback[role] = value.toLowerCase()
+    }
+  }
   return {
     version: 1,
+    feedback,
     // Earlier starter names are migrated without changing customized tokens.
     name: ['Forma', 'Bough', 'Formwork'].includes(s.name.trim()) ? 'Bloom' : s.name.trim(),
     description: typeof s.description === 'string' ? s.description.slice(0, 160) : '',
@@ -194,13 +216,17 @@ export function exportCSS(s: DesignSystem) {
   return `${url ? `@import url("${url}");\n\n` : ''}:root {\n${[
     ...scale('primary', s.primary),
     ...scale('secondary', s.secondary),
+    ...Object.entries(s.feedback).flatMap(([name, hex]) => scale(name, hex)),
+    ...scale('neutral', neutralBase(s)),
     `  --color-primary: ${s.primary};`,
     `  --color-on-primary: ${foreground(s.primary)};`,
     `  --color-secondary: ${s.secondary};`,
     `  --color-on-secondary: ${foreground(s.secondary)};`,
     `  --font-family: ${fontFamily(s.font)};`,
     `  --font-heading: ${fontFamily(s.headingFont)};`,
-    ...semanticColors.map((c) => `  --color-${c.name.toLowerCase()}: ${c.hex};`),
+    ...Object.entries({ neutral: neutralBase(s), ...s.feedback }).map(
+      ([name, hex]) => `  --color-${name}: ${hex};`,
+    ),
     ...systemTypeStyles(s).flatMap((t) => [
       `  --type-${t.name.toLowerCase().replaceAll(' ', '-')}-size: ${t.size / 16}rem;`,
       `  --type-${t.name.toLowerCase().replaceAll(' ', '-')}-weight: ${t.weight};`,
@@ -210,7 +236,14 @@ export function exportCSS(s: DesignSystem) {
     ...[1, 2, 3, 4, 6, 8, 12, 16].map((n) => `  --space-${n}: ${n * s.spacing}px;`),
     motionDeclarations(s.motion),
     surfaces('light'),
-  ].join('\n')}\n}\n\n[data-theme="dark"] {\n${surfaces('dark')}\n}\n\n${reducedMotionCSS}\n`
+    declarations(uiTokens(s, 'light')),
+    declarations(componentAliases),
+    '  --radius-sm: ' + Math.round(s.radius / 2) + 'px;',
+    '  --radius-lg: ' + Math.round(s.radius * 1.5) + 'px;',
+    '  --line-height-body: 1.6;\n  --line-height-heading: 1.15;\n  --border-width: 1px;\n  --opacity-disabled: 0.48;',
+  ].join(
+    '\n',
+  )}\n}\n\n[data-theme="dark"] {\n${surfaces('dark')}\n${declarations(uiTokens(s, 'dark'))}\n}\n\n${reducedMotionCSS}\n`
 }
 export function download(name: string, content: string, type = 'application/json') {
   const url = URL.createObjectURL(new Blob([content], { type }))
@@ -219,4 +252,75 @@ export function download(name: string, content: string, type = 'application/json
   a.download = name
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+export function neutralBase(s: DesignSystem) {
+  return { stone: '#78766c', slate: '#718198', zinc: '#77777f' }[s.neutral]
+}
+export function colorFamilies(s: DesignSystem) {
+  return { primary: s.primary, secondary: s.secondary, neutral: neutralBase(s), ...s.feedback }
+}
+function luminance(hex: string) {
+  const channels = [1, 3, 5]
+    .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+  return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+}
+export function contrast(a: string, b: string) {
+  const x = luminance(a),
+    y = luminance(b)
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
+}
+function readable(seed: string, background: string, ratio = 4.5) {
+  const candidates = [seed, ...palette(seed).map((p) => p.color)]
+  return candidates.find((color) => contrast(color, background) >= ratio) ?? foreground(background)
+}
+export function uiTokens(s: DesignSystem, mode: 'light' | 'dark'): Record<string, string> {
+  const n = neutralPalettes[s.neutral][mode],
+    dark = mode === 'dark'
+  const roles: Record<string, string> = {
+    'surface-canvas': n.background,
+    'surface-default': n.surface,
+    'surface-subtle': mix(neutralBase(s), dark ? 0 : 255, dark ? 0.65 : 0.94),
+    'text-primary': n.text,
+    'text-secondary': readable(neutralBase(s), n.surface),
+    'border-default': n.border,
+    'border-strong': readable(neutralBase(s), n.surface, 3),
+    'action-primary': s.primary,
+    'action-primary-hover': mix(s.primary, foreground(s.primary) === '#000000' ? 255 : 0, 0.1),
+    'action-primary-active': mix(s.primary, foreground(s.primary) === '#000000' ? 255 : 0, 0.18),
+    'action-on-primary': foreground(s.primary),
+    'text-link': readable(s.primary, n.surface),
+    'focus-ring': readable(s.primary, n.surface, 3),
+    'surface-disabled': n.background,
+    'text-disabled': neutralBase(s),
+  }
+  for (const role of feedbackRoles) {
+    const hex = s.feedback[role],
+      surface = mix(hex, dark ? 0 : 255, dark ? 0.78 : 0.94)
+    roles[`${role}-surface`] = surface
+    roles[`${role}-text`] = readable(hex, surface)
+    roles[`${role}-border`] = readable(hex, surface, 3)
+    roles[`${role}-solid`] = hex
+    roles[`${role}-on-solid`] = foreground(hex)
+  }
+  return roles
+}
+export const componentAliases: Record<string, string> = {
+  'button-background': 'var(--action-primary)',
+  'button-text': 'var(--action-on-primary)',
+  'button-hover': 'var(--action-primary-hover)',
+  'button-active': 'var(--action-primary-active)',
+  'input-background': 'var(--surface-default)',
+  'input-text': 'var(--text-primary)',
+  'input-border': 'var(--border-strong)',
+  'input-invalid': 'var(--error-border)',
+  'card-background': 'var(--surface-default)',
+  'card-border': 'var(--border-default)',
+  'dialog-background': 'var(--surface-default)',
+}
+function declarations(tokens: Record<string, string>) {
+  return Object.entries(tokens)
+    .map(([key, value]) => `  --${key}: ${value};`)
+    .join('\n')
 }
