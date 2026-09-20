@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ArrowRight } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { ArrowRight, Pause, Wind } from 'lucide-vue-next'
 import BlossomTree from './BlossomTree.vue'
+const breezePaused = ref(false)
 defineProps<{ primary: string; dark: boolean; name: string }>()
 const emit = defineEmits<{ explore: []; color: [value: string] }>()
 </script>
@@ -8,7 +10,7 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
   <section class="blossom-hero" :class="{ moonlit: dark }">
     <div class="blossom-scene" aria-hidden="true">
       <span class="moon-halo"></span><span class="moon-disc"></span>
-      <BlossomTree class="blossom-tree" :dark="dark" />
+      <BlossomTree class="blossom-tree" :dark="dark" :paused="breezePaused" />
     </div>
     <div class="blossom-copy">
       <span class="garden-label">FROM A SEED TO A SYSTEM</span>
@@ -22,8 +24,20 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
       </button>
     </div>
     <div class="garden-caption">
-      <span>{{ dark ? 'DARK APPEARANCE' : 'LIGHT APPEARANCE' }}</span
-      ><label class="blossom-color"
+      <div class="garden-caption-controls">
+        <span>{{ dark ? 'DARK APPEARANCE' : 'LIGHT APPEARANCE' }}</span
+        ><button
+          class="breeze-toggle"
+          :aria-label="breezePaused ? 'Resume breeze' : 'Pause breeze'"
+          :aria-pressed="breezePaused"
+          @click="breezePaused = !breezePaused"
+        >
+          <Wind v-if="breezePaused" :size="13" /><Pause v-else :size="13" /><span>{{
+            breezePaused ? 'Resume breeze' : 'Pause breeze'
+          }}</span>
+        </button>
+      </div>
+      <label class="blossom-color"
         ><input
           type="color"
           :value="primary"
@@ -134,7 +148,7 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
   background: #edf0f475;
   backdrop-filter: blur(8px);
 }
-.garden-caption > span {
+.garden-caption-controls > span {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 8px;
   letter-spacing: 1.5px;
@@ -206,7 +220,7 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
   background: #18212b66;
   border-color: #64717a22;
 }
-.moonlit .garden-caption > span,
+.moonlit .garden-caption-controls > span,
 .moonlit .blossom-color {
   color: #a8b6bd;
 }
@@ -242,7 +256,7 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
     right: 10%;
     width: 160px;
   }
-  .garden-caption > span {
+  .garden-caption-controls > span {
     font-size: 7px;
     letter-spacing: 1px;
   }
@@ -290,7 +304,7 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
     padding: 13px 16px;
     gap: 8px;
   }
-  .garden-caption > span {
+  .garden-caption-controls > span {
     font-size: 7px;
     max-width: 115px;
     line-height: 1.6;
@@ -306,6 +320,38 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
 @media (prefers-reduced-motion: reduce) {
   .blossom-tree {
     transition: none;
+  }
+}
+.garden-caption-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.breeze-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 9px;
+}
+.breeze-toggle:hover {
+  border-color: currentColor;
+}
+@media (max-width: 700px) {
+  .garden-caption-controls {
+    gap: 6px;
+  }
+  .breeze-toggle span {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breeze-toggle {
+    display: none;
   }
 }
 </style>

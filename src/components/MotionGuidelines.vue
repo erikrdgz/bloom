@@ -214,8 +214,11 @@ function replay() {
           </dd>
         </div>
         <div>
-          <dt>Do not animate the background</dt>
-          <dd>The tree and moon stay still. Ambient loops compete with the component examples.</dd>
+          <dt>Keep ambient motion optional</dt>
+          <dd>
+            The overview breeze is slow and pausable. The moon stays still, and reduced-motion
+            preferences disable the breeze. Keep ambient movement out of component examples.
+          </dd>
         </div>
         <div>
           <dt>Respect reduced motion</dt>
