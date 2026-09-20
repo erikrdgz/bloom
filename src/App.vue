@@ -189,7 +189,7 @@ function apply(value: DesignSystem) {
           >
             <Code2 :size="17" /><span>Dev mode</span
             ><span class="switch-mini" :class="{ on: devMode }"></span></button
-          ><button class="button export-button" @click="mode = 'export'">
+          ><button class="button export-secondary" @click="mode = 'export'">
             <Download :size="16" /><span>Export</span>
           </button>
         </div>
@@ -208,8 +208,8 @@ function apply(value: DesignSystem) {
               }}
             </p>
           </div>
-          <button v-if="section === 'Overview'" class="text-button" @click="mode = 'create'">
-            Start from scratch<ArrowUpRight :size="16" />
+          <button class="button accent create-primary" @click="mode = 'create'">
+            Create a system<ArrowUpRight :size="16" />
           </button>
         </div>
         <template v-if="section === 'Overview'">
