@@ -113,15 +113,9 @@ a {
   color: var(--accent);
   margin-left: -9px;
 }
-.brand-mark {
-  display: grid;
-  place-items: center;
+.wordmark .bloom-mark {
   width: 30px;
-  height: 33px;
-  background: #eb653f;
-  color: #fff;
-  border-radius: 7px;
-  transform: rotate(-7deg);
+  height: 30px;
 }
 .workspace-label,
 .nav-label {
@@ -279,11 +273,18 @@ nav button:hover,
   margin-left: 238px;
 }
 .topbar {
+  /* Sticky because on narrow screens this bar holds the only way to reach
+     navigation: once the sidebar collapses into a drawer, its menu button
+     lives here. Scrolling used to carry it off the screen for good. */
+  position: sticky;
+  top: 0;
+  z-index: 20;
   height: 77px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
+  background: var(--bg);
   padding: 0 42px;
   gap: 18px;
 }

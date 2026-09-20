@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BloomSelect from './ui/BloomSelect.vue'
+import BloomMark from './BloomMark.vue'
 import {
-  Sprout,
   Activity,
   LayoutGrid,
   Palette,
@@ -41,9 +41,7 @@ const sections = [
 <template>
   <aside class="sidebar" :class="{ open }">
     <a class="wordmark" href="#" @click.prevent="$emit('navigate', 'Overview')"
-      ><span class="brand-mark"><Sprout :size="21" /></span>bloom<span class="brand-period"
-        >.</span
-      ></a
+      ><BloomMark :size="30" />bloom<span class="brand-period">.</span></a
     >
     <button class="icon-button close-nav" aria-label="Close navigation" @click="$emit('close')">
       <X :size="20" />

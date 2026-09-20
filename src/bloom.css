@@ -27,18 +27,9 @@
   letter-spacing: -1.8px;
   gap: 10px;
 }
-.brand-mark {
-  width: 28px;
-  height: 34px;
-  border-radius: 0;
-  transform: none;
-  background: transparent;
-  color: var(--primary);
-}
-.brand-mark svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 1.2;
+.wordmark .bloom-mark {
+  width: 32px;
+  height: 32px;
 }
 .brand-period {
   margin-left: -8px;

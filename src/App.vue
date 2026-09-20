@@ -5,6 +5,7 @@ import SemanticColors from './components/SemanticColors.vue'
 import TokenHierarchy from './components/TokenHierarchy.vue'
 import { uiTokens } from './lib/system'
 import BloomSelect from './components/ui/BloomSelect.vue'
+import BloomMark from './components/BloomMark.vue'
 import { computed, provide, nextTick, onUnmounted, ref, watch } from 'vue'
 import {
   ArrowUpRight,
@@ -475,24 +476,26 @@ function apply(value: DesignSystem) {
           </div>
           <pre><code>{{ css }}</code></pre>
         </section>
-        <footer class="library-footer product-footer">
+        <footer class="product-footer">
           <div class="product-footer-brand">
-            <strong>bloom<span aria-hidden="true">.</span></strong>
-            <p>A place for your ideas to take root.</p>
-            <small>Designed and built by Erik Rodríguez</small>
+            <p class="product-footer-lockup">
+              <BloomMark :size="34" /><strong>bloom<span aria-hidden="true">.</span></strong>
+            </p>
+            <p class="product-footer-line">A place for your ideas to take root.</p>
           </div>
-          <nav aria-label="Project links">
-            <a href="https://www.erikrod.com" target="_blank" rel="noreferrer"
-              >Portfolio <span aria-hidden="true">↗</span></a
-            >
+          <nav class="product-footer-links" aria-label="Project links">
             <a href="https://www.erikrod.com/bloom" target="_blank" rel="noreferrer"
-              >Behind the project</a
-            >
+              >Behind the project <ArrowUpRight :size="13" aria-hidden="true"
+            /></a>
             <a href="https://github.com/erikrdgz/bloom" target="_blank" rel="noreferrer"
-              >View source</a
-            >
+              >View source <ArrowUpRight :size="13" aria-hidden="true"
+            /></a>
+            <a href="https://www.erikrod.com" target="_blank" rel="noreferrer"
+              >Portfolio <ArrowUpRight :size="13" aria-hidden="true"
+            /></a>
             <button class="text-button" @click="mode = 'export'">Export tokens</button>
           </nav>
+          <p class="product-footer-credit">Designed and built by Erik Rodríguez</p>
         </footer>
       </main>
     </div>
