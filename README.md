@@ -1,5 +1,7 @@
 # Bloom
 
+[Live demo](https://erikrdgz.github.io/bloom/) · [Source](https://github.com/erikrdgz/bloom)
+
 A small, open-source design system studio built with Vue 3 and TypeScript. Explore a complete starter system on first load, tune its foundations, and export what you need for your next project.
 
 ## Run locally
