@@ -5,12 +5,21 @@
   background: #f7f7f3;
   font-size: 16px;
   font-weight: 400;
+  /* Nothing here ever refused pull-to-refresh, so Chrome took any upward
+     flick that overran zero as a refresh. Safari has no such gesture, which
+     is why it only ever showed in one of them.
+
+     On :root as well as body: the viewport takes its overscroll behaviour
+     from the root element and only falls back to body when the root leaves
+     it auto. */
+  overscroll-behavior-y: none;
 }
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
+  overscroll-behavior-y: none;
 }
 button,
 input,
@@ -1919,9 +1928,17 @@ nav button,
 .studio {
   --rail: 238px;
   --topbar-h: 77px;
+  /* Room below the bar as well as for it. Reserving the height alone put the
+     page's own heading flush against an opaque bar — fine standing still at
+     zero, and wrong everywhere else, because Chrome's toolbar animates as the
+     reader comes back up and does not reliably leave the document at zero.
+     Landing a few tens of pixels down hid the heading behind the bar, the
+     reader pulled down to uncover it, and that pull is what handed the
+     gesture to pull-to-refresh. */
+  --topbar-gap: 40px;
 }
 .main-shell {
-  padding-top: var(--topbar-h);
+  padding-top: calc(var(--topbar-h) + var(--topbar-gap));
 }
 @media (max-width: 1200px) {
   .studio {
