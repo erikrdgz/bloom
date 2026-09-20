@@ -1,0 +1,188 @@
+.studio {
+  --bg: #f8f6f0;
+  --surface: #fdfcf8;
+  --sidebar: #f0eee6;
+  --text: #333a33;
+  --muted: #737b70;
+  --border: #e3e1d7;
+  --soft: #eeefe7;
+  --accent: var(--primary);
+  --ink: #354235;
+}
+.studio.dark {
+  --bg: #111923;
+  --surface: #19232d;
+  --sidebar: #141e27;
+  --text: #e6eae3;
+  --muted: #a1aeb5;
+  --border: #2b3843;
+  --soft: #22303a;
+  --accent: var(--primary);
+  --ink: #dfe7dd;
+}
+.wordmark {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 37px;
+  font-weight: 500;
+  letter-spacing: -1.8px;
+  gap: 10px;
+}
+.brand-mark {
+  width: 28px;
+  height: 34px;
+  border-radius: 0;
+  transform: none;
+  background: transparent;
+  color: var(--primary);
+}
+.brand-mark svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.2;
+}
+.brand-period {
+  margin-left: -8px;
+}
+.system-selector {
+  border-radius: 3px;
+  box-shadow: none;
+  background: transparent;
+}
+.system-monogram {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  background: #e5e8dc;
+  font-size: 27px;
+}
+.dark .system-monogram {
+  background: #2b3b3d;
+  color: #c9d5c5;
+}
+nav button {
+  border-radius: 2px;
+}
+nav button.active {
+  background: #e2e7da;
+  color: #354630;
+}
+.dark nav button.active {
+  background: #293c3d;
+  color: #d2dfd2;
+}
+nav button svg,
+.sidebar-action svg {
+  stroke-width: 1.35;
+}
+.open-note {
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 21px 10px 10px;
+}
+.open-note .asterisk {
+  color: var(--primary);
+  font-size: 23px;
+}
+.open-note strong {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.open-note p {
+  font-size: 11px;
+}
+h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: 43px;
+  letter-spacing: -1.4px;
+}
+.panel,
+.stat-grid {
+  border-radius: 3px;
+  box-shadow: none;
+}
+.stat-grid {
+  margin-top: 16px;
+  background: transparent;
+}
+.stat-grid strong {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 29px;
+}
+.panel-title h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.4px;
+}
+.panel-title .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.panel-title .icon-button svg {
+  stroke-width: 1.2;
+}
+.palette-strip {
+  border-radius: 2px;
+}
+.type-specimen {
+  color: var(--text);
+}
+.segment {
+  background: var(--soft);
+}
+.sample-badge {
+  background: #eaf0e3;
+  border-color: #d7e1ce;
+  color: #526844;
+}
+.dark .sample-badge {
+  background: #253c34;
+  border-color: #355044;
+  color: #b4c9ad;
+}
+.dark .sample-badge > span {
+  background: #b4c9ad;
+}
+.spacing-chart > div > span {
+  background: color-mix(in srgb, var(--primary), var(--surface) 30%);
+  border-color: color-mix(in srgb, var(--primary), var(--text) 18%);
+}
+.spacing-chart > div:nth-child(2n) > span {
+  background: color-mix(in srgb, var(--primary), var(--surface) 65%);
+}
+.page-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+.dialog-content h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 34px;
+  font-weight: 500;
+}
+.preview-story h2 {
+  font-family: var(--sample-font);
+}
+.dev-panel {
+  background: #14202a;
+  border-color: #344552;
+}
+.dev-panel .button {
+  background: #263b44;
+  border-color: #3d5662;
+}
+.dev-panel code {
+  color: #bbd4cf;
+}
+@media (max-width: 700px) {
+  .wordmark {
+    font-size: 34px;
+  }
+  h1 {
+    font-size: 38px;
+  }
+  .panel-title h2 {
+    font-size: 24px;
+  }
+}
