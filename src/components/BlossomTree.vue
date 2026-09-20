@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { blossoms } from '../lib/blossoms'
-defineProps<{ dark: boolean; paused: boolean }>()
+defineProps<{ dark: boolean }>()
 const woodImage = `${import.meta.env.BASE_URL}images/cherry-wood-clean.png`
 const breezePetals = [
   [365, 80, 15, -3],
@@ -13,6 +13,12 @@ const breezePetals = [
   [710, 150, 16, -5],
   [450, 310, 20, -14],
   [600, 240, 18, -9],
+  [420, 100, 16, -8],
+  [680, 180, 19, -4],
+  [370, 245, 17, -12],
+  [745, 290, 20, -6],
+  [510, 160, 18, -15],
+  [625, 300, 16, -11],
 ]
 const rear = blossoms.filter((flower) => flower.rear)
 const front = blossoms.filter((flower) => !flower.rear)
@@ -20,7 +26,7 @@ const front = blossoms.filter((flower) => !flower.rear)
 <template>
   <svg
     class="vector-tree"
-    :class="{ night: dark, 'breeze-paused': paused }"
+    :class="{ night: dark }"
     viewBox="0 0 800 560"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
@@ -103,7 +109,7 @@ const front = blossoms.filter((flower) => !flower.rear)
         <g
           class="drifting-petal"
           :style="{
-            '--drift-duration': `${duration}s`,
+            '--drift-duration': `${duration! * 0.75}s`,
             '--drift-delay': `${delay}s`,
             '--drift-x': `${-150 - index * 9}px`,
             '--drift-y': `${95 + index * 8}px`,
@@ -154,7 +160,7 @@ const front = blossoms.filter((flower) => !flower.rear)
 }
 .swaying-tree {
   transform-origin: 570px 550px;
-  animation: tree-breeze 12s ease-in-out infinite;
+  animation: tree-breeze 10s ease-in-out infinite;
   will-change: transform;
 }
 .drifting-petal {
@@ -163,9 +169,6 @@ const front = blossoms.filter((flower) => !flower.rear)
 }
 .tumbling-petal {
   animation: petal-tumble var(--tumble-duration) ease-in-out var(--drift-delay) infinite;
-}
-.breeze-paused :is(.swaying-tree, .drifting-petal, .tumbling-petal) {
-  animation-play-state: paused;
 }
 @keyframes tree-breeze {
   0%,
@@ -211,7 +214,7 @@ const front = blossoms.filter((flower) => !flower.rear)
   }
 }
 @media (max-width: 700px) {
-  .petal-origin:nth-child(n + 7) {
+  .petal-origin:nth-child(n + 11) {
     display: none;
   }
 }

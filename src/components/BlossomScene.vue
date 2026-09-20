@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ArrowRight, Pause, Wind } from 'lucide-vue-next'
+import { ArrowRight } from 'lucide-vue-next'
 import BlossomTree from './BlossomTree.vue'
-const breezePaused = ref(false)
-defineProps<{ primary: string; dark: boolean; name: string }>()
-const emit = defineEmits<{ explore: []; color: [value: string] }>()
+defineProps<{ dark: boolean }>()
+const emit = defineEmits<{ explore: [] }>()
 </script>
 <template>
   <section class="blossom-hero" :class="{ moonlit: dark }">
     <div class="blossom-scene" aria-hidden="true">
       <span class="moon-halo"></span><span class="moon-disc"></span>
-      <BlossomTree class="blossom-tree" :dark="dark" :paused="breezePaused" />
+      <BlossomTree class="blossom-tree" :dark="dark" />
     </div>
     <div class="blossom-copy">
       <span class="garden-label">FROM A SEED TO A SYSTEM</span>
@@ -24,27 +22,8 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
       </button>
     </div>
     <div class="garden-caption">
-      <div class="garden-caption-controls">
-        <span>{{ dark ? 'DARK APPEARANCE' : 'LIGHT APPEARANCE' }}</span
-        ><button
-          class="breeze-toggle"
-          :aria-label="breezePaused ? 'Resume breeze' : 'Pause breeze'"
-          :aria-pressed="breezePaused"
-          @click="breezePaused = !breezePaused"
-        >
-          <Wind v-if="breezePaused" :size="13" /><Pause v-else :size="13" /><span>{{
-            breezePaused ? 'Resume breeze' : 'Pause breeze'
-          }}</span>
-        </button>
-      </div>
-      <label class="blossom-color"
-        ><input
-          type="color"
-          :value="primary"
-          aria-label="Blossom and brand color"
-          @input="emit('color', ($event.target as HTMLInputElement).value)"
-        /><span>Blossom tint</span><code>{{ primary.toUpperCase() }}</code></label
-      >
+      <p>To my fellow creatives — keep making things only you can make.</p>
+      <span class="garden-signature">— Erik Rodriguez</span>
     </div>
   </section>
 </template>
@@ -148,40 +127,6 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
   background: #edf0f475;
   backdrop-filter: blur(8px);
 }
-.garden-caption-controls > span {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 1.5px;
-  color: #748195;
-}
-.blossom-color {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10px;
-  cursor: pointer;
-  color: #596b82;
-}
-.blossom-color input {
-  width: 20px;
-  height: 20px;
-  border: none;
-  padding: 0;
-  background: none;
-  border-radius: 50%;
-  overflow: hidden;
-}
-.blossom-color input::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-.blossom-color input::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-.blossom-color code {
-  font-size: 9px;
-  color: inherit;
-}
 .moonlit {
   background: #171f2a;
   border-color: #313b47;
@@ -220,10 +165,7 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
   background: #18212b66;
   border-color: #64717a22;
 }
-.moonlit .garden-caption-controls > span,
-.moonlit .blossom-color {
-  color: #a8b6bd;
-}
+
 @media (min-width: 1500px) {
   .blossom-hero {
     min-height: 440px;
@@ -263,95 +205,81 @@ const emit = defineEmits<{ explore: []; color: [value: string] }>()
 }
 @media (max-width: 700px) {
   .blossom-hero {
-    min-height: 545px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
   .blossom-copy {
-    padding: 28px 25px 245px;
+    order: 0;
     width: 100%;
+    padding: 28px 25px 12px;
   }
   .garden-label {
     font-size: 8px;
     letter-spacing: 1.3px;
   }
   .blossom-copy h2 {
-    font-size: 48px;
+    font-size: clamp(40px, 11vw, 48px);
     margin: 22px 0 17px;
   }
   .blossom-copy p {
     font-size: 12px;
-    max-width: 170px;
+    max-width: 290px;
   }
   .garden-link {
     gap: 15px;
     margin-top: 18px;
-    font-size: 11px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .blossom-scene {
+    position: relative;
+    order: 1;
+    inset: auto;
+    z-index: 0;
+    height: clamp(240px, 72vw, 360px);
+    overflow: hidden;
   }
   .blossom-tree {
-    width: 100%;
-    height: 64%;
+    width: 115%;
+    height: 112%;
     right: -12%;
-    bottom: 1%;
+    bottom: -10%;
   }
   .moon-disc {
     width: 140px;
-    top: 52%;
-    right: 7%;
-  }
-  .moonlit .blossom-scene {
-    background: radial-gradient(ellipse at 85% 65%, #64718a30, transparent 62%);
+    top: 10%;
+    right: 15%;
   }
   .garden-caption {
-    padding: 13px 16px;
-    gap: 8px;
-  }
-  .garden-caption-controls > span {
-    font-size: 7px;
-    max-width: 115px;
-    line-height: 1.6;
-  }
-  .blossom-color {
-    font-size: 9px;
+    position: relative;
+    order: 2;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
+    padding: 16px 20px;
   }
-  .blossom-color code {
-    font-size: 8px;
-  }
+}
+.garden-caption p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #596b82;
+}
+.garden-signature {
+  flex-shrink: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  font-style: italic;
+  color: #596b82;
+}
+.moonlit .garden-caption p,
+.moonlit .garden-signature {
+  color: #bcc7d4;
 }
 @media (prefers-reduced-motion: reduce) {
   .blossom-tree {
     transition: none;
-  }
-}
-.garden-caption-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.breeze-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 7px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background: transparent;
-  color: inherit;
-  font-size: 9px;
-}
-.breeze-toggle:hover {
-  border-color: currentColor;
-}
-@media (max-width: 700px) {
-  .garden-caption-controls {
-    gap: 6px;
-  }
-  .breeze-toggle span {
-    display: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .breeze-toggle {
-    display: none;
   }
 }
 </style>

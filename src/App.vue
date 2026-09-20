@@ -213,13 +213,7 @@ function apply(value: DesignSystem) {
           </button>
         </div>
         <template v-if="section === 'Overview'">
-          <BlossomScene
-            :primary="system.primary"
-            :dark="dark"
-            :name="system.name"
-            @explore="navigate('Components')"
-            @color="system.primary = $event"
-          />
+          <BlossomScene :dark="dark" @explore="navigate('Components')" />
           <div class="stat-grid">
             <button
               v-for="stat in [
