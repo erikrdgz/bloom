@@ -13,6 +13,26 @@
      from the root element and only falls back to body when the root leaves
      it auto. */
   overscroll-behavior-y: none;
+
+  /* The bar's height, and the room a heading gets below it. They live here
+     rather than on .studio because scroll-padding-top below is set on the
+     scroll container, which is the root element. */
+  --topbar-h: 77px;
+  --topbar-gap: 40px;
+
+  /* The bar is fixed, so the top of the viewport is covered. Without this the
+     browser does not know that, and anything that scrolls an element into
+     view — an anchor, restoring a position, or focus() — aligns that element
+     with the top of the viewport, which is behind the bar. That is what put
+     the page heading under it with only its descenders showing.
+
+     App.vue focuses the page heading on navigate and passes
+     preventScroll: true, which WebKit does not honour reliably; this holds
+     whether that flag is respected or not, and covers every other way a
+     scroll can be initiated too. Padding on .main-shell cannot do this job:
+     padding positions content at rest, scroll-padding governs where the
+     browser decides to scroll to. */
+  scroll-padding-top: calc(var(--topbar-h) + var(--topbar-gap));
 }
 * {
   box-sizing: border-box;
@@ -1927,15 +1947,6 @@ nav button,
    sidebar ends, and --topbar-h keeps the bar and the space it needs in step. */
 .studio {
   --rail: 238px;
-  --topbar-h: 77px;
-  /* Room below the bar as well as for it. Reserving the height alone put the
-     page's own heading flush against an opaque bar — fine standing still at
-     zero, and wrong everywhere else, because Chrome's toolbar animates as the
-     reader comes back up and does not reliably leave the document at zero.
-     Landing a few tens of pixels down hid the heading behind the bar, the
-     reader pulled down to uncover it, and that pull is what handed the
-     gesture to pull-to-refresh. */
-  --topbar-gap: 40px;
 }
 .main-shell {
   padding-top: calc(var(--topbar-h) + var(--topbar-gap));
@@ -1946,8 +1957,10 @@ nav button,
   }
 }
 @media (max-width: 700px) {
+  :root {
+    --topbar-h: 65px;
+  }
   .studio {
     --rail: 0px;
-    --topbar-h: 65px;
   }
 }
