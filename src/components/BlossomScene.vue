@@ -11,19 +11,11 @@ const emit = defineEmits<{ explore: [] }>()
       <BlossomTree class="blossom-tree" :dark="dark" />
     </div>
     <div class="blossom-copy">
-      <span class="garden-label">FROM A SEED TO A SYSTEM</span>
       <h2>Good systems<br /><em>keep growing.</em></h2>
-      <p>
-        Begin with a color, find your voice in type.<br />Let every component grow from the same
-        roots.
-      </p>
+      <p>Create a design system with your colors, typography, and components.</p>
       <button class="garden-link" @click="emit('explore')">
         Explore the library <ArrowRight :size="17" />
       </button>
-    </div>
-    <div class="garden-caption">
-      <p>Built for the creative soul. A starting point for what comes next.</p>
-      <span class="garden-signature">Erik Rodriguez</span>
     </div>
   </section>
 </template>
@@ -57,18 +49,20 @@ const emit = defineEmits<{ explore: [] }>()
   color: #6d7888;
 }
 .blossom-copy h2 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -1.5px;
-  font-size: clamp(43px, 4.4vw, 66px);
-  line-height: 1.02;
+  font-family: var(--heading-font);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-size: clamp(40px, 3.8vw, 58px);
+  line-height: 1.12;
   margin: 28px 0 20px;
 }
 .blossom-copy h2 em {
-  font-weight: 400;
-  color: #748195;
+  font-weight: inherit;
+  font-style: normal;
+  color: var(--hero-accent);
 }
 .blossom-copy p {
+  max-width: 36ch;
   font-size: 13px;
   line-height: 1.85;
   color: #657386;
@@ -80,7 +74,7 @@ const emit = defineEmits<{ explore: [] }>()
   gap: 28px;
   background: transparent;
   padding: 8px 0;
-  border-bottom: 1px solid #929eae;
+  border-bottom: 0;
   font-size: 12px;
   margin-top: 23px;
 }
@@ -130,16 +124,13 @@ const emit = defineEmits<{ explore: [] }>()
 .moonlit {
   background: #171f2a;
   border-color: #313b47;
-  color: #eef0e9;
+  color: #eaf0f7;
 }
 .moonlit .blossom-scene {
   background: radial-gradient(ellipse at 76% 35%, #48566b45 0, transparent 62%);
 }
 .moonlit .garden-label {
   color: #9aabba;
-}
-.moonlit .blossom-copy h2 em {
-  color: #a3afa8;
 }
 .moonlit .blossom-copy p {
   color: #a6b0b9;
@@ -188,7 +179,7 @@ const emit = defineEmits<{ explore: [] }>()
     width: 61%;
   }
   .blossom-copy h2 {
-    font-size: 48px;
+    font-size: 42px;
   }
   .blossom-tree {
     width: 82%;
@@ -219,7 +210,7 @@ const emit = defineEmits<{ explore: [] }>()
     letter-spacing: 1.3px;
   }
   .blossom-copy h2 {
-    font-size: clamp(40px, 11vw, 48px);
+    font-size: clamp(32px, 9vw, 42px);
     margin: 22px 0 17px;
   }
   .blossom-copy p {
@@ -268,7 +259,7 @@ const emit = defineEmits<{ explore: [] }>()
 }
 .garden-signature {
   flex-shrink: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--heading-font);
   font-size: 17px;
   font-style: italic;
   color: #596b82;

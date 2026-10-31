@@ -62,7 +62,7 @@ export const directions = [
       primary: '#edb4c8',
       secondary: '#718198',
       font: 'DM Sans',
-      headingFont: 'Space Grotesk',
+      headingFont: 'DM Sans',
       neutral: 'slate',
       radius: 12,
       spacing: 6,

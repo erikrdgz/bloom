@@ -73,7 +73,7 @@ const allRows = computed({
 })
 </script>
 <template>
-  <div class="component-library">
+  <div class="component-library" data-page-cascade>
     <div class="library-intro">
       <span>14 component families</span><span>Examples use your current tokens</span>
     </div>

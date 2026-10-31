@@ -1,0 +1,65 @@
+/* The studio itself is a consumer of the selected design system. */
+.studio {
+  font-family: var(--sample-font);
+  font-size: var(--base-size);
+}
+.studio :where(h1, h2, h3, h4) {
+  font-family: var(--heading-font);
+}
+.studio :where(button, input, select, textarea) {
+  font-family: var(--sample-font);
+}
+.studio :where(code, pre, kbd, .code-copy, .dialog-content textarea) {
+  font-family: var(--code-font);
+}
+.studio .button:not(.dev-button) {
+  --studio-control-background: var(--studio-button-secondary-background);
+  --studio-control-color: var(--studio-button-secondary-color);
+  --studio-control-border: var(--studio-button-secondary-border);
+  --studio-control-border-radius: var(--studio-button-secondary-border-radius);
+  --studio-control-padding: var(--studio-button-secondary-padding);
+  --studio-control-font-size: var(--studio-button-secondary-font-size);
+  --studio-control-box-shadow: var(--studio-button-secondary-box-shadow);
+  background: var(--studio-control-background);
+  color: var(--studio-control-color);
+  border: var(--studio-control-border);
+  border-radius: var(--studio-control-border-radius);
+  padding: var(--studio-control-padding);
+  font-size: var(--studio-control-font-size);
+  box-shadow: var(--studio-control-box-shadow);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.studio .button:is(.accent, .export-button, .builder-save-button) {
+  --studio-control-background: var(--studio-button-primary-background);
+  --studio-control-color: var(--studio-button-primary-color);
+  --studio-control-border: var(--studio-button-primary-border);
+  --studio-control-border-radius: var(--studio-button-primary-border-radius);
+  --studio-control-padding: var(--studio-button-primary-padding);
+  --studio-control-font-size: var(--studio-button-primary-font-size);
+  --studio-control-box-shadow: var(--studio-button-primary-box-shadow);
+}
+.studio .button.danger {
+  --studio-control-background: var(--studio-button-danger-background);
+  --studio-control-color: var(--studio-button-danger-color);
+  --studio-control-border: var(--studio-button-danger-border);
+  --studio-control-border-radius: var(--studio-button-danger-border-radius);
+  --studio-control-padding: var(--studio-button-danger-padding);
+  --studio-control-font-size: var(--studio-button-danger-font-size);
+  --studio-control-box-shadow: var(--studio-button-danger-box-shadow);
+}
+.studio .button.quiet {
+  --studio-control-background: var(--studio-button-quiet-background);
+  --studio-control-color: var(--studio-button-quiet-color);
+  --studio-control-border: var(--studio-button-quiet-border);
+  --studio-control-padding: var(--studio-button-quiet-padding);
+  --studio-control-border-radius: var(--studio-button-quiet-border-radius);
+  --studio-control-font-size: var(--studio-button-quiet-font-size);
+  --studio-control-box-shadow: var(--studio-button-quiet-box-shadow);
+}
+/* Hints and navigation labels use the body face, not a third display family. */
+.studio
+  :is(.breadcrumb code, .specimen-label, .hero-registration, .palette-strip small, .motion-guide) {
+  font-family: var(--sample-font);
+}

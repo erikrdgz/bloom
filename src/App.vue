@@ -1,15 +1,19 @@
 <script setup lang="ts">
+import ComponentBuilder from './components/ComponentBuilder.vue'
+import StudioFeatures from './components/StudioFeatures.vue'
+import SystemMaster from './components/SystemMaster.vue'
+import { saveComponentToSystem, type SavedComponent } from './lib/builder'
 import { pageCode } from './lib/inspect'
 import ColorPicker from './components/ui/ColorPicker.vue'
 import SemanticColors from './components/SemanticColors.vue'
 import TokenHierarchy from './components/TokenHierarchy.vue'
-import { uiTokens } from './lib/system'
+import { studioTheme } from './lib/studioTheme'
+import { animatePageCascade, pageCascadeTargets } from './lib/pageMotion'
+import { useReducedMotion } from './composables/useReducedMotion'
 import BloomSelect from './components/ui/BloomSelect.vue'
-import BloomMark from './components/BloomMark.vue'
 import { computed, provide, nextTick, onUnmounted, ref, watch } from 'vue'
 import {
   ArrowUpRight,
-  ArrowRight,
   Code2,
   Download,
   Sun,
@@ -37,11 +41,8 @@ import {
   defaultSystem,
   parseSystem,
   exportCSS,
-  foreground,
   fonts,
   systemTypeStyles,
-  neutralPalettes,
-  systemShadow,
   fontFamily,
   type DesignSystem,
 } from './lib/system'
@@ -55,16 +56,15 @@ try {
 } catch {}
 const dark = ref(initialDark)
 provide('bloom-dark', dark)
-const sectionDescriptions: Record<string, string> = {
-  Colors: 'Shape brand palettes, feedback colors, and the roles that connect them.',
-  Typography: 'Font family, sizes, and weights.',
-  'Spacing & shape': 'Base spacing, scale, and corner radius.',
-  Components: 'States, interactions, and usage for each component.',
-  Motion: 'Timing, easing, and accessible transitions.',
-  'Icon set': 'Select icons and export an SVG sprite.',
-}
 const section = ref('Overview')
+const editingComponentId = ref<string>()
 const pageHeading = ref<HTMLHeadingElement>()
+const reducedMotion = useReducedMotion()
+let stopPageMotion: (() => void) | undefined
+watch(reducedMotion, (reduced) => {
+  if (reduced) stopPageMotion?.()
+})
+onUnmounted(() => stopPageMotion?.())
 const devMode = ref(false)
 provide('bloom-dev-mode', devMode)
 provide('bloom-system', system)
@@ -75,39 +75,7 @@ let toastTimer: ReturnType<typeof setTimeout>
 onUnmounted(() => clearTimeout(toastTimer))
 const css = computed(() => pageCode(system.value, section.value))
 const typeStyles = computed(() => systemTypeStyles(system.value))
-const sampleStyle = computed(() => {
-  const s = system.value
-  const neutral = neutralPalettes[s.neutral][dark.value ? 'dark' : 'light']
-  const factor = { calm: 1.4, standard: 1, snappy: 0.7 }[s.motion]
-  return {
-    ...Object.fromEntries(
-      Object.entries(uiTokens(s, dark.value ? 'dark' : 'light')).map(([key, value]) => [
-        `--${key}`,
-        value,
-      ]),
-    ),
-    '--primary': s.primary,
-    '--on-primary': foreground(s.primary),
-    '--secondary': s.secondary,
-    '--sample-radius': `${s.radius}px`,
-    '--sample-space': `${s.spacing}px`,
-    '--sample-font': fontFamily(s.font),
-    '--heading-font': fontFamily(s.headingFont),
-    '--base-size': `${s.baseSize}px`,
-    '--system-shadow': systemShadow(s),
-    '--bg': neutral.background,
-    '--surface': neutral.surface,
-    '--sidebar': neutral.background,
-    '--text': neutral.text,
-    '--muted': dark.value ? '#a8b0b8' : '#687078',
-    '--border': neutral.border,
-    '--soft': neutral.background,
-    '--ink': neutral.text,
-    '--duration-fast': `${Math.round(120 * factor)}ms`,
-    '--duration-standard': `${Math.round(200 * factor)}ms`,
-    '--duration-deliberate': `${Math.round(320 * factor)}ms`,
-  }
-})
+const sampleStyle = computed(() => studioTheme(system.value, dark.value))
 watch(
   () => [system.value.font, system.value.headingFont],
   () => {
@@ -154,12 +122,54 @@ async function copy(value: string) {
     notify('Clipboard unavailable. Use Export to download your tokens.')
   }
 }
+function revealPage(element: Element, done: () => void) {
+  stopPageMotion?.()
+  window.scrollTo({ top: 0, behavior: 'instant' })
+  const page = element as HTMLElement
+  const heading = pageHeading.value
+  const targets = [...(heading ? [heading] : []), ...pageCascadeTargets(page)].filter((target) => {
+    const rect = target.getBoundingClientRect()
+    return rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight
+  })
+  const duration = reducedMotion.value
+    ? 0
+    : parseFloat(getComputedStyle(page).getPropertyValue('--duration-deliberate')) || 320
+  stopPageMotion = animatePageCascade(targets, duration, done)
+}
+function retirePage(element: Element, done: () => void) {
+  stopPageMotion?.()
+  const page = element as HTMLElement
+  page.inert = true
+  page
+    .querySelectorAll<HTMLElement>('[popover]:popover-open')
+    .forEach((popover) => popover.hidePopover())
+  done()
+}
 async function navigate(value: string) {
   section.value = value
   mobileNav.value = false
   await nextTick()
   pageHeading.value?.focus({ preventScroll: true })
   window.scrollTo({ top: 0, behavior: 'instant' })
+}
+function saveComponent(value: SavedComponent) {
+  try {
+    const updated = saveComponentToSystem(system.value, value)
+    if (activeId.value === 'bloom-default') addSystem({ ...updated, name: 'My Bloom' })
+    else system.value = updated
+    editingComponentId.value = value.id
+    notify(`${value.name} saved to ${system.value.name}`)
+  } catch (error) {
+    notify(error instanceof Error ? error.message : 'Could not save this component.')
+  }
+}
+function newComponent() {
+  editingComponentId.value = undefined
+  navigate('Component builder')
+}
+function editComponent(id: string) {
+  editingComponentId.value = id
+  navigate('Component builder')
 }
 function openDialog(value: 'create' | 'import') {
   mode.value = value
@@ -201,18 +211,16 @@ function apply(value: DesignSystem) {
             aria-label="Open navigation"
             @click="mobileNav = true"
           >
-            <Menu :size="20" /></button
-          ><span class="workspace-story">A living design library</span>
+            <Menu :size="20" />
+          </button>
         </div>
         <div class="topbar-actions">
-          <span class="local-status"><Check :size="14" />Local workspace</span
-          ><button
+          <button
             class="icon-button theme-button"
             :aria-label="dark ? 'Switch to light theme' : 'Switch to dark theme'"
             @click="dark = !dark"
           >
             <Sun v-if="dark" :size="19" /><Moon v-else :size="19" /></button
-          ><span class="topbar-rule"></span
           ><button
             class="button dev-button"
             :class="{ enabled: devMode }"
@@ -233,256 +241,312 @@ function apply(value: DesignSystem) {
             <h1 ref="pageHeading" tabindex="-1">
               {{ section === 'Overview' ? system.name + ' library' : section }}
             </h1>
-            <p>
-              {{
-                section === 'Overview'
-                  ? 'A place for your visual language to take root and grow.'
-                  : sectionDescriptions[section]
-              }}
-            </p>
           </div>
           <button class="button accent create-primary" @click="mode = 'create'">
             Create a system<ArrowUpRight :size="16" />
           </button>
         </div>
-        <TokenHierarchy
-          v-if="['Colors', 'Components'].includes(section)"
-          :system="system"
-          :dark="dark"
-        />
-        <template v-if="section === 'Overview'">
-          <BlossomScene :dark="dark" @explore="navigate('Components')" />
-          <div class="stat-grid">
-            <button
-              v-for="stat in [
-                { icon: Palette, count: '70', label: 'Color tokens', target: 'Colors' },
-                { icon: Type, count: '6', label: 'Type styles', target: 'Typography' },
-                { icon: Ruler, count: '8', label: 'Spacing steps', target: 'Spacing & shape' },
-                {
-                  icon: Shapes,
-                  count: String(system.icons.length),
-                  label: 'Selected icons',
-                  target: 'Icon set',
-                },
-              ]"
-              :key="stat.label"
-              @click="navigate(stat.target)"
-            >
-              <component :is="stat.icon" :size="18" /><strong>{{ stat.count }}</strong
-              ><span>{{ stat.label }}</span
-              ><ArrowUpRight :size="16" />
-            </button>
-          </div>
-          <div class="section-line">
-            <h2>Foundations</h2>
-            <span></span>
-          </div>
-          <div class="overview-grid">
-            <ColorPalette :primary="system.primary" @select="navigate('Colors')" @copy="copy" />
-            <section class="panel type-panel">
-              <div class="panel-title">
-                <div>
-                  <h2>Typography</h2>
+        <div class="page-stage">
+          <Transition
+            :css="false"
+            @enter="revealPage"
+            @leave="retirePage"
+            @enter-cancelled="stopPageMotion?.()"
+          >
+            <div :key="section" class="page-content">
+              <TokenHierarchy
+                v-if="['Colors', 'Components'].includes(section)"
+                :system="system"
+                :dark="dark"
+              />
+              <template v-if="section === 'Overview'">
+                <BlossomScene :dark="dark" @explore="navigate('Components')" />
+                <div class="stat-grid" data-page-cascade>
+                  <button
+                    v-for="stat in [
+                      { icon: Palette, count: '70', label: 'Color tokens', target: 'Colors' },
+                      { icon: Type, count: '6', label: 'Type styles', target: 'Typography' },
+                      {
+                        icon: Ruler,
+                        count: '8',
+                        label: 'Spacing steps',
+                        target: 'Spacing & shape',
+                      },
+                      {
+                        icon: Shapes,
+                        count: String(system.icons.length),
+                        label: 'Selected icons',
+                        target: 'Icon set',
+                      },
+                    ]"
+                    :key="stat.label"
+                    @click="navigate(stat.target)"
+                  >
+                    <component :is="stat.icon" :size="18" /><strong>{{ stat.count }}</strong
+                    ><span>{{ stat.label }}</span
+                    ><ArrowUpRight :size="16" />
+                  </button>
                 </div>
-                <button
-                  class="icon-button"
-                  aria-label="Edit typography"
-                  @click="navigate('Typography')"
+                <StudioFeatures
+                  :component-count="system.components.length"
+                  @build="navigate('Component builder')"
+                  @system="navigate('System view')"
+                />
+                <div class="section-line">
+                  <h2>Foundations</h2>
+                </div>
+                <div class="overview-grid" data-page-cascade>
+                  <ColorPalette
+                    :primary="system.primary"
+                    @select="navigate('Colors')"
+                    @copy="copy"
+                  />
+                  <section class="panel type-panel">
+                    <div class="panel-title">
+                      <div>
+                        <h2>Typography</h2>
+                      </div>
+                      <button
+                        class="icon-button"
+                        aria-label="Edit typography"
+                        @click="navigate('Typography')"
+                      >
+                        <ArrowUpRight :size="20" />
+                      </button>
+                    </div>
+                    <div class="type-specimen" :style="{ fontFamily: fontFamily(system.font) }">
+                      <span>Aa</span>
+                      <div>
+                        <strong>{{ system.font }}</strong
+                        ><small>Font family</small
+                        ><span class="weight-label">REGULAR / MEDIUM / BOLD</span>
+                      </div>
+                    </div>
+                    <div class="type-alphabet">
+                      ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />abcdefghijklmnopqrstuvwxyz 0123456789
+                    </div>
+                  </section>
+                  <ComponentPreview @explore="navigate('Components')" />
+                  <section class="panel rhythm-panel">
+                    <div class="panel-title">
+                      <div>
+                        <h2>Spacing</h2>
+                      </div>
+                      <button
+                        class="icon-button"
+                        aria-label="Edit spacing and shape"
+                        @click="navigate('Spacing & shape')"
+                      >
+                        <ArrowUpRight :size="20" />
+                      </button>
+                    </div>
+                    <div class="spacing-chart">
+                      <div v-for="n in [1, 2, 3, 4, 6, 8, 12, 16]" :key="n">
+                        <span :style="{ height: `${n * system.spacing * 1.5}px` }"></span
+                        ><code>{{ n * system.spacing }}</code>
+                      </div>
+                    </div>
+                    <div class="panel-foot">
+                      <span>{{ system.spacing }}px base unit</span
+                      ><span>{{ system.radius }}px corner radius</span>
+                    </div>
+                  </section>
+                </div>
+              </template>
+              <template v-else-if="section === 'Colors'"
+                ><div class="editor-toolbar" data-system-editor>
+                  <ColorPicker v-model="system.primary" label="Primary color" />
+                  <ColorPicker v-model="system.secondary" label="Secondary color" />
+                  <label
+                    >Neutrals<BloomSelect v-model="system.neutral">
+                      <option value="stone">Stone</option>
+                      <option value="slate">Slate</option>
+                      <option value="zinc">Zinc</option>
+                    </BloomSelect></label
+                  >
+                </div>
+                <ColorPalette
+                  :primary="system.primary"
+                  expanded
+                  label="Primary"
+                  @select="
+                    notify(
+                      activeId === 'bloom-default'
+                        ? 'Bloom is view-only. Choose Create a system to make it your own.'
+                        : 'Use the primary color picker above to edit your palette',
+                    )
+                  "
+                  @copy="copy"
+                />
+                <div style="height: 20px"></div>
+                <ColorPalette
+                  :primary="system.secondary"
+                  label="Secondary"
+                  expanded
+                  @select="
+                    notify(
+                      activeId === 'bloom-default'
+                        ? 'Bloom is view-only. Choose Create a system to make it your own.'
+                        : 'Use the secondary color picker above to edit your palette',
+                    )
+                  "
+                  @copy="copy"
+                />
+                <SemanticColors
+                  data-system-editor
+                  :system="system"
+                  @update="system.feedback = $event"
+                />
+              </template>
+              <template v-else-if="section === 'Typography'"
+                ><div class="editor-toolbar" data-system-editor>
+                  <label
+                    >Body font
+                    <BloomSelect v-model="system.font">
+                      <option v-for="font in fonts" :key="font">{{ font }}</option>
+                    </BloomSelect></label
+                  ><label
+                    >Heading font<BloomSelect v-model="system.headingFont">
+                      <option v-for="font in fonts" :key="font">{{ font }}</option>
+                    </BloomSelect></label
+                  ><label
+                    >Base size<BloomSelect v-model.number="system.baseSize">
+                      <option
+                        v-for="size in [14, 15, 16, 17, 18, 19, 20]"
+                        :key="size"
+                        :value="size"
+                      >
+                        {{ size }}px
+                      </option>
+                    </BloomSelect></label
+                  ><label
+                    >Scale<BloomSelect v-model.number="system.typeRatio">
+                      <option
+                        v-for="ratio in [1.125, 1.2, 1.25, 1.333]"
+                        :key="ratio"
+                        :value="ratio"
+                      >
+                        {{ ratio }}
+                      </option>
+                    </BloomSelect></label
+                  >
+                </div>
+                <section
+                  class="panel typography-list"
+                  :style="{ fontFamily: fontFamily(system.font) }"
                 >
-                  <ArrowUpRight :size="20" />
-                </button>
-              </div>
-              <div class="type-specimen" :style="{ fontFamily: system.font }">
-                <span>Aa</span>
-                <div>
-                  <strong>{{ system.font }}</strong
-                  ><small>Font family</small
-                  ><span class="weight-label">REGULAR / MEDIUM / BOLD</span>
-                </div>
-              </div>
-              <div class="type-alphabet">
-                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />abcdefghijklmnopqrstuvwxyz 0123456789
-              </div>
-            </section>
-            <ComponentPreview @explore="navigate('Components')" />
-            <section class="panel rhythm-panel">
-              <div class="panel-title">
-                <div>
-                  <h2>Spacing</h2>
-                </div>
-                <button
-                  class="icon-button"
-                  aria-label="Edit spacing and shape"
-                  @click="navigate('Spacing & shape')"
-                >
-                  <ArrowUpRight :size="20" />
-                </button>
-              </div>
-              <div class="spacing-chart">
-                <div v-for="n in [1, 2, 3, 4, 6, 8, 12, 16]" :key="n">
-                  <span :style="{ height: `${n * system.spacing * 1.5}px` }"></span
-                  ><code>{{ n * system.spacing }}</code>
-                </div>
-              </div>
-              <div class="panel-foot">
-                <span>{{ system.spacing }}px base unit</span
-                ><span>{{ system.radius }}px corner radius</span>
-              </div>
-            </section>
-          </div>
-        </template>
-        <template v-else-if="section === 'Colors'"
-          ><div class="editor-toolbar" data-system-editor>
-            <ColorPicker v-model="system.primary" label="Primary color" />
-            <ColorPicker v-model="system.secondary" label="Secondary color" />
-            <label
-              >Neutrals<BloomSelect v-model="system.neutral">
-                <option value="stone">Stone</option>
-                <option value="slate">Slate</option>
-                <option value="zinc">Zinc</option>
-              </BloomSelect></label
-            >
-          </div>
-          <ColorPalette
-            :primary="system.primary"
-            expanded
-            label="Primary"
-            @select="
-              notify(
-                activeId === 'bloom-default'
-                  ? 'Bloom is view-only. Choose Create a system to make it your own.'
-                  : 'Use the primary color picker above to edit your palette',
-              )
-            "
-            @copy="copy"
-          />
-          <div style="height: 20px"></div>
-          <ColorPalette
-            :primary="system.secondary"
-            label="Secondary"
-            expanded
-            @select="
-              notify(
-                activeId === 'bloom-default'
-                  ? 'Bloom is view-only. Choose Create a system to make it your own.'
-                  : 'Use the secondary color picker above to edit your palette',
-              )
-            "
-            @copy="copy"
-          />
-          <SemanticColors data-system-editor :system="system" @update="system.feedback = $event" />
-        </template>
-        <template v-else-if="section === 'Typography'"
-          ><div class="editor-toolbar" data-system-editor>
-            <label
-              >Body font
-              <BloomSelect v-model="system.font">
-                <option v-for="font in fonts" :key="font">{{ font }}</option>
-              </BloomSelect></label
-            ><label
-              >Heading font<BloomSelect v-model="system.headingFont">
-                <option v-for="font in fonts" :key="font">{{ font }}</option>
-              </BloomSelect></label
-            ><label
-              >Base size<BloomSelect v-model.number="system.baseSize">
-                <option v-for="size in [14, 15, 16, 17, 18, 19, 20]" :key="size" :value="size">
-                  {{ size }}px
-                </option>
-              </BloomSelect></label
-            ><label
-              >Scale<BloomSelect v-model.number="system.typeRatio">
-                <option v-for="ratio in [1.125, 1.2, 1.25, 1.333]" :key="ratio" :value="ratio">
-                  {{ ratio }}
-                </option>
-              </BloomSelect></label
-            >
-          </div>
-          <section class="panel typography-list" :style="{ fontFamily: system.font }">
-            <div v-for="style in typeStyles" :key="style.name">
-              <div>
-                <span>{{ style.name }}</span
-                ><code>{{ style.size }}px / {{ style.weight }}</code>
-              </div>
-              <p
-                :style="{
-                  fontSize: `${style.size / 16}rem`,
-                  fontWeight: style.weight,
-                  fontFamily: fontFamily(
-                    ['Body', 'Label'].includes(style.name) ? system.font : system.headingFont,
-                  ),
-                }"
+                  <div v-for="style in typeStyles" :key="style.name">
+                    <div>
+                      <span>{{ style.name }}</span
+                      ><code>{{ style.size }}px / {{ style.weight }}</code>
+                    </div>
+                    <p
+                      :style="{
+                        fontSize: `${style.size / 16}rem`,
+                        fontWeight: style.weight,
+                        fontFamily: fontFamily(
+                          ['Body', 'Label'].includes(style.name) ? system.font : system.headingFont,
+                        ),
+                      }"
+                    >
+                      Ideas take shape.
+                    </p>
+                  </div>
+                </section></template
               >
-                Ideas take shape.
-              </p>
+              <template v-else-if="section === 'Spacing & shape'"
+                ><div class="editor-toolbar" data-system-editor>
+                  <label
+                    >Base unit
+                    <input v-model.number="system.spacing" type="range" min="2" max="8" />{{
+                      system.spacing
+                    }}px</label
+                  ><label
+                    >Corner radius
+                    <input v-model.number="system.radius" type="range" min="0" max="24" />{{
+                      system.radius
+                    }}px</label
+                  >
+                  <label
+                    >Elevation<BloomSelect v-model="system.elevation">
+                      <option value="none">Flat</option>
+                      <option value="soft">Soft</option>
+                      <option value="raised">Raised</option>
+                    </BloomSelect></label
+                  >
+                </div>
+                <section class="panel spacing-editor">
+                  <h2>Spacing scale</h2>
+                  <div v-for="n in [1, 2, 3, 4, 6, 8, 12, 16]" :key="n" class="spacing-token">
+                    <code>space-{{ n }}</code
+                    ><span :style="{ width: `${n * system.spacing * 3}px` }"></span
+                    ><code>{{ n * system.spacing }}px</code>
+                  </div>
+                  <div class="shape-preview">
+                    <span :style="{ borderRadius: `${system.radius}px` }"></span>
+                    <p>
+                      Shared radius and elevation.<br /><code>--radius: {{ system.radius }}px</code>
+                    </p>
+                  </div>
+                </section></template
+              >
+              <ComponentBuilder
+                v-else-if="section === 'Component builder'"
+                :key="activeId"
+                :system="system"
+                :original="activeId === 'bloom-default'"
+                :edit-id="editingComponentId"
+                @save="saveComponent"
+                @overview="navigate('System view')"
+                @copy="copy"
+              />
+              <SystemMaster
+                v-else-if="section === 'System view'"
+                :key="activeId"
+                :system="system"
+                :dark="dark"
+                @edit="editComponent"
+                @build="newComponent"
+                @navigate="navigate"
+                @notify="notify"
+              />
+              <ComponentLibrary v-else-if="section === 'Components'" @notify="notify" />
+              <MotionGuidelines
+                :profile="system.motion"
+                @profile="system.motion = $event"
+                v-else-if="section === 'Motion'"
+                @copy="copy"
+              />
+              <IconStudio
+                v-else-if="section === 'Icon set'"
+                :selected="system.icons"
+                @update="system.icons = $event"
+              />
+              <section
+                v-if="devMode && !['Components', 'Component builder'].includes(section)"
+                class="dev-panel"
+              >
+                <div class="panel-title">
+                  <div>
+                    <h2>{{ section }} · Developer reference</h2>
+                  </div>
+                  <button class="button" @click="copy(css)">
+                    <Copy :size="16" />Copy
+                    {{
+                      section === 'Overview'
+                        ? 'reference'
+                        : section === 'Icon set'
+                          ? 'markup'
+                          : 'CSS'
+                    }}
+                  </button>
+                </div>
+                <pre><code>{{ css }}</code></pre>
+              </section>
             </div>
-          </section></template
-        >
-        <template v-else-if="section === 'Spacing & shape'"
-          ><div class="editor-toolbar" data-system-editor>
-            <label
-              >Base unit <input v-model.number="system.spacing" type="range" min="2" max="8" />{{
-                system.spacing
-              }}px</label
-            ><label
-              >Corner radius
-              <input v-model.number="system.radius" type="range" min="0" max="24" />{{
-                system.radius
-              }}px</label
-            >
-            <label
-              >Elevation<BloomSelect v-model="system.elevation">
-                <option value="none">Flat</option>
-                <option value="soft">Soft</option>
-                <option value="raised">Raised</option>
-              </BloomSelect></label
-            >
-          </div>
-          <section class="panel spacing-editor">
-            <h2>Spacing scale</h2>
-            <div v-for="n in [1, 2, 3, 4, 6, 8, 12, 16]" :key="n" class="spacing-token">
-              <code>space-{{ n }}</code
-              ><span :style="{ width: `${n * system.spacing * 3}px` }"></span
-              ><code>{{ n * system.spacing }}px</code>
-            </div>
-            <div class="shape-preview">
-              <span :style="{ borderRadius: `${system.radius}px` }"></span>
-              <p>
-                Shared radius and elevation.<br /><code>--radius: {{ system.radius }}px</code>
-              </p>
-            </div>
-          </section></template
-        >
-        <ComponentLibrary v-else-if="section === 'Components'" @notify="notify" />
-        <MotionGuidelines
-          :profile="system.motion"
-          @profile="system.motion = $event"
-          v-else-if="section === 'Motion'"
-          @copy="copy"
-        />
-        <IconStudio
-          v-else-if="section === 'Icon set'"
-          :selected="system.icons"
-          @update="system.icons = $event"
-        />
-        <section v-if="devMode && section !== 'Components'" class="dev-panel">
-          <div class="panel-title">
-            <div>
-              <h2>{{ section }} · Developer reference</h2>
-            </div>
-            <button class="button" @click="copy(css)">
-              <Copy :size="16" />Copy
-              {{ section === 'Overview' ? 'reference' : section === 'Icon set' ? 'markup' : 'CSS' }}
-            </button>
-          </div>
-          <pre><code>{{ css }}</code></pre>
-        </section>
+          </Transition>
+        </div>
         <footer class="product-footer">
-          <div class="product-footer-brand">
-            <p class="product-footer-lockup">
-              <BloomMark :size="34" /><strong>bloom<span aria-hidden="true">.</span></strong>
-            </p>
-            <p class="product-footer-line">A place for your ideas to take root.</p>
-          </div>
           <nav class="product-footer-links" aria-label="Project links">
             <a href="https://www.erikrod.com/bloom" target="_blank" rel="noreferrer"
               >Behind the project <ArrowUpRight :size="13" aria-hidden="true"
@@ -491,11 +555,12 @@ function apply(value: DesignSystem) {
               >View source <ArrowUpRight :size="13" aria-hidden="true"
             /></a>
             <a href="https://www.erikrod.com" target="_blank" rel="noreferrer"
-              >Portfolio <ArrowUpRight :size="13" aria-hidden="true"
+              >Erik Rodríguez <ArrowUpRight :size="13" aria-hidden="true"
             /></a>
-            <button class="text-button" @click="mode = 'export'">Export tokens</button>
+            <a href="https://opensource.org/license/mit" target="_blank" rel="noreferrer"
+              >MIT license</a
+            >
           </nav>
-          <p class="product-footer-credit">Designed and built by Erik Rodríguez</p>
         </footer>
       </main>
     </div>

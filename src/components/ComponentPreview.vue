@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LibraryButton from './ui/LibraryButton.vue'
 import { ref } from 'vue'
 import { ArrowUpRight, ArrowRight, Check, Plus, Bell, Heart } from 'lucide-vue-next'
 const emit = defineEmits<{ explore: [] }>()
@@ -20,13 +21,13 @@ const saved = ref(false)
     </div>
     <div class="component-stage">
       <div class="sample-buttons">
-        <button class="sample-primary" @click="subscribed = !subscribed">
+        <LibraryButton class="sample-primary" @click="subscribed = !subscribed">
           {{ subscribed ? 'Saved' : 'Save changes'
-          }}<Check v-if="subscribed" :size="16" /><ArrowRight v-else :size="16" /></button
-        ><button class="sample-secondary" @click="saved = !saved">
+          }}<Check v-if="subscribed" :size="16" /><ArrowRight v-else :size="16" /></LibraryButton
+        ><LibraryButton variant="secondary" class="sample-secondary" @click="saved = !saved">
           <Heart :size="16" :fill="saved ? 'currentColor' : 'none'" />{{
             saved ? 'Saved' : 'Save for later'
-          }}</button
+          }}</LibraryButton
         ><button class="round-add" aria-label="Toggle saved item" @click="saved = !saved">
           <Check v-if="saved" :size="18" /><Plus v-else :size="18" />
         </button>
@@ -56,9 +57,6 @@ const saved = ref(false)
       <label class="sample-field"
         >Email address<input v-model="email" type="email" placeholder="name@example.com"
       /></label>
-    </div>
-    <div class="panel-foot">
-      <span>Buttons, inputs, badges & more</span><span>Interactive examples</span>
     </div>
   </section>
 </template>

@@ -52,9 +52,6 @@ watch(
         ><span :style="{ color: system.secondary }">Library</span>
       </div>
       <div class="preview-product-card">
-        <span class="preview-kicker">{{
-          system.description || 'Your project, built with these tokens.'
-        }}</span>
         <h3 :style="{ fontFamily: fontFamily(system.headingFont), fontSize: `${heading.size}px` }">
           A new collection
         </h3>

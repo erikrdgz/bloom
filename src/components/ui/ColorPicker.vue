@@ -5,6 +5,7 @@ const props = defineProps<{ modelValue: string; label: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const id = useId()
 const panel = ref<HTMLElement>()
+const expanded = ref(false)
 const position = ref({})
 const hex = ref(props.modelValue)
 const channels = ref(hexToHsl(props.modelValue))
@@ -50,6 +51,7 @@ function adjust() {
       :aria-label="`${label}: ${modelValue}`"
       aria-haspopup="dialog"
       :aria-controls="id"
+      :aria-expanded="expanded"
       @click="open"
     >
       <i :style="{ background: modelValue }" /><span
@@ -64,6 +66,7 @@ function adjust() {
       role="dialog"
       :aria-label="`${label} picker`"
       :style="position"
+      @beforetoggle="expanded = $event.newState === 'open'"
     >
       <div class="color-picker-heading">
         <strong>{{ label }}</strong
@@ -173,9 +176,7 @@ function adjust() {
   background: #fff;
   color: #202936;
   box-shadow: 0 12px 44px #0003;
-  font:
-    13px 'DM Sans',
-    sans-serif;
+  font: 13px var(--sample-font);
 }
 .color-picker-heading {
   display: flex;

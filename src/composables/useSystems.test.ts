@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { effectScope, nextTick } from 'vue'
 import { useSystems } from './useSystems'
+import { makeComponent, saveComponentToSystem, resolveComponent } from '../lib/builder'
 import { defaultSystem } from '../lib/system'
 afterEach(() => vi.unstubAllGlobals())
 describe('original Bloom workspace', () => {
@@ -37,4 +38,36 @@ describe('original Bloom workspace', () => {
     )
     restoredScope.stop()
   })
+})
+
+it('restores saved components and their links without leaking between systems', async () => {
+  const data = new Map<string, string>()
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => data.get(key) ?? null,
+    setItem: (key: string, value: string) => data.set(key, value),
+  })
+  const scope = effectScope()
+  const workspace = scope.run(() => useSystems())!
+  workspace.addSystem({ ...defaultSystem, name: 'Workshop' })
+  workspace.system.value = saveComponentToSystem(
+    workspace.system.value,
+    makeComponent('button', workspace.system.value),
+  )
+  const customId = workspace.activeId.value
+  workspace.addSystem({ ...defaultSystem, name: 'Separate' })
+  expect(workspace.system.value.components).toEqual([])
+  workspace.activeId.value = customId
+  await nextTick()
+  scope.stop()
+  const restoredScope = effectScope()
+  const restored = restoredScope.run(() => useSystems())!
+  expect(restored.system.value.components).toHaveLength(4)
+  const secondary = restored.system.value.components.find((c) => c.buttonRole === 'secondary')!
+  expect(resolveComponent(secondary, restored.system.value.components).style).toMatchObject({
+    topLeft: 12,
+    paddingX: 20,
+  })
+  restored.activeId.value = 'bloom-default'
+  expect(restored.system.value.components).toEqual([])
+  restoredScope.stop()
 })

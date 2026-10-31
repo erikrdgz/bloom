@@ -5,4 +5,8 @@ import './bloom.css'
 import './library.css'
 import './create.css'
 import './interactions.css'
+import './builder.css'
+import './studio-theme.css'
+import './atelier.css'
+import './navigation-motion.css'
 createApp(App).mount('#app')

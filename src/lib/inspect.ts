@@ -1,6 +1,7 @@
 import { exportCSS, type DesignSystem } from './system'
 
 export function pageCode(system: DesignSystem, section: string): string {
+  if (section === 'System view') return exportCSS(system)
   if (section === 'Overview')
     return JSON.stringify(
       {

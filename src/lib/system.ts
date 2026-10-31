@@ -1,3 +1,6 @@
+import { isIconId } from './icons'
+export { iconNames } from './icons'
+import { parseComponents, componentCSS, resolveComponent, type SavedComponent } from './builder'
 import { motionDeclarations, reducedMotionCSS } from './motion'
 import { fonts, fontFamily, fontStylesheet, type FontFamily } from './fonts'
 export { fonts, fontFamily } from './fonts'
@@ -26,6 +29,7 @@ export interface DesignSystem {
   radius: number
   spacing: number
   icons: string[]
+  components: SavedComponent[]
 }
 export const defaultSystem: DesignSystem = {
   version: 1,
@@ -34,7 +38,7 @@ export const defaultSystem: DesignSystem = {
   description: 'Design tokens and component examples.',
   primary: '#edb4c8',
   font: 'DM Sans',
-  headingFont: 'Space Grotesk',
+  headingFont: 'DM Sans',
   secondary: '#718198',
   neutral: 'slate',
   baseSize: 16,
@@ -44,21 +48,8 @@ export const defaultSystem: DesignSystem = {
   radius: 12,
   spacing: 4,
   icons: ['heart', 'star', 'bolt', 'moon', 'sun', 'check'],
+  components: [],
 }
-export const iconNames = [
-  'heart',
-  'star',
-  'bolt',
-  'moon',
-  'sun',
-  'check',
-  'arrow-right',
-  'plus',
-  'bell',
-  'house',
-  'gear',
-  'user',
-]
 export const semanticColors = [
   { name: 'Neutral', hex: '#747570' },
   { name: 'Success', hex: '#357760' },
@@ -91,10 +82,7 @@ export function parseSystem(input: string): DesignSystem {
     s.spacing > 8
   )
     throw new Error('Spacing must be a whole number between 2 and 8.')
-  if (
-    !Array.isArray(s.icons) ||
-    !s.icons.every((i) => typeof i === 'string' && iconNames.includes(i))
-  )
+  if (!Array.isArray(s.icons) || !s.icons.every((i) => typeof i === 'string' && isIconId(i)))
     throw new Error('The icon set contains unsupported icons.')
   const headingFont = s.headingFont ?? s.font
   if (!fonts.includes(headingFont as FontFamily))
@@ -130,6 +118,7 @@ export function parseSystem(input: string): DesignSystem {
   }
   return {
     version: 1,
+    components: parseComponents(s.components),
     feedback,
     // Earlier starter names are migrated without changing customized tokens.
     name: ['Forma', 'Bough', 'Formwork'].includes(s.name.trim()) ? 'Bloom' : s.name.trim(),
@@ -243,7 +232,7 @@ export function exportCSS(s: DesignSystem) {
     '  --line-height-body: 1.6;\n  --line-height-heading: 1.15;\n  --border-width: 1px;\n  --opacity-disabled: 0.48;',
   ].join(
     '\n',
-  )}\n}\n\n[data-theme="dark"] {\n${surfaces('dark')}\n${declarations(uiTokens(s, 'dark'))}\n}\n\n${reducedMotionCSS}\n`
+  )}\n}\n\n[data-theme="dark"] {\n${surfaces('dark')}\n${declarations(uiTokens(s, 'dark'))}\n}\n\n${reducedMotionCSS}\n${(s.components ?? []).map((c) => componentCSS(resolveComponent(c, s.components))).join('\n\n')}\n`
 }
 export function download(name: string, content: string, type = 'application/json') {
   const url = URL.createObjectURL(new Blob([content], { type }))

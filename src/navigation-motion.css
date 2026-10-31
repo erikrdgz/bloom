@@ -1,0 +1,40 @@
+/* Keep native popovers in the top layer until their exit transition finishes. */
+.bloom-select-menu,
+.color-picker-panel {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    opacity var(--duration-fast, 120ms) ease,
+    transform var(--duration-standard, 200ms) cubic-bezier(0.2, 0, 0, 1),
+    display var(--duration-standard, 200ms) allow-discrete,
+    overlay var(--duration-standard, 200ms) allow-discrete;
+}
+.bloom-select-menu:popover-open,
+.color-picker-panel:popover-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+@starting-style {
+  .bloom-select-menu:popover-open,
+  .color-picker-panel:popover-open {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+.bloom-select-trigger > svg {
+  transition: transform var(--duration-standard, 200ms) ease;
+}
+.bloom-select-trigger[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+.page-stage {
+  min-height: 45vh;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bloom-select-menu,
+  .color-picker-panel,
+  .bloom-select-trigger > svg {
+    transition: none;
+  }
+}

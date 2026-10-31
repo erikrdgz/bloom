@@ -45,6 +45,7 @@ async function show() {
     top: below > 220 ? `${rect.bottom + 6}px` : 'auto',
     bottom: below > 220 ? 'auto' : `${window.innerHeight - rect.top + 6}px`,
     maxHeight: `${Math.min(300, Math.max(below, rect.top) - 20)}px`,
+    transformOrigin: below > 220 ? 'top center' : 'bottom center',
   }
   active.value = Math.max(
     0,
@@ -125,7 +126,6 @@ function key(event: KeyboardEvent) {
       ><ChevronDown :size="15" />
     </button>
     <div
-      v-if="open"
       :id="id"
       ref="menu"
       popover="auto"
@@ -136,13 +136,14 @@ function key(event: KeyboardEvent) {
       class="bloom-select-menu"
       :style="position"
       @keydown="key"
-      @toggle="open = $event.newState === 'open'"
+      @beforetoggle="open = $event.newState === 'open'"
     >
       <button
         v-for="(option, index) in options"
         :key="option.value"
         type="button"
         role="option"
+        tabindex="-1"
         :aria-selected="selected === option.value"
         :disabled="option.disabled"
         :data-index="index"

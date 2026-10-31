@@ -89,8 +89,7 @@ function save(format: 'json' | 'css') {
   >
     <div class="dialog-content">
       <div class="dialog-heading">
-        <span class="eyebrow">DESIGN SYSTEM</span
-        ><button class="icon-button" aria-label="Close dialog" @click="emit('close')">
+        <button class="icon-button" aria-label="Close dialog" @click="emit('close')">
           <X :size="20" />
         </button>
       </div>
@@ -148,9 +147,7 @@ function save(format: 'json' | 'css') {
             ><small>Palettes, UI roles, typography, spacing and motion</small></span
           ><Download :size="20" /></button
         ><button class="export-option" @click="save('json')">
-          <span
-            ><strong>Bloom JSON</strong
-            ><small>Editable system configuration · version 1</small></span
+          <span><strong>Bloom JSON</strong><small>Editable system configuration</small></span
           ><Download :size="20" /></button
       ></template>
     </div>

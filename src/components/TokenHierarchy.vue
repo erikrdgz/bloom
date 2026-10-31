@@ -13,14 +13,13 @@ const colors = computed(() => uiTokens(props.system, props.dark ? 'dark' : 'ligh
     </p>
     <div class="hierarchy-steps">
       <div>
-        <small>01 · Primitive</small><strong>Color palette</strong><code>--color-error-500</code>
+        <small>Primitive</small><strong>Color palette</strong><code>--color-error-500</code>
       </div>
       <div>
-        <small>02 · Semantic role</small><strong>Invalid input</strong><code>--error-border</code>
+        <small>Semantic role</small><strong>Invalid input</strong><code>--error-border</code>
       </div>
       <div>
-        <small>03 · Component</small><strong>Field validation border</strong
-        ><code>--input-invalid</code>
+        <small>Component</small><strong>Field validation border</strong><code>--input-invalid</code>
       </div>
     </div>
     <h3>UI roles</h3>
